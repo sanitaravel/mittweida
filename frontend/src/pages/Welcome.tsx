@@ -3,12 +3,8 @@ import { Settings } from "lucide-react";
 
 const Welcome = () => {
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      {/* Header with Logo and Settings */}
-      <header className="flex justify-between items-center p-6">
-        <div className="text-display text-2xl font-bold text-charcoal">
-          Mittweida Classic Explorer
-        </div>
+    <div className="min-h-screen bg-cream flex flex-col">      {/* Header with Settings */}
+      <header className="flex justify-end items-center p-6">
         <Link href="/settings">
           <button className="p-3 rounded-full hover:bg-beige transition-colors">
             <Settings size={28} className="text-charcoal" />
