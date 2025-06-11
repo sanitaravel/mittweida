@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Open Sans', sans-serif;
+  
+  --color-sandstone: #c2b280;
+  --color-beige: #f5f0e1;
+  --color-cream: #fffdf6;
+  --color-sage: #9caf88;
+  --color-dustyBlue: #7a9eab;
+  --color-terracotta: #d88c9a;
+  --color-charcoal: #213547;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-cream);
+  color: var(--color-charcoal);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+.btn-primary {
+  background-color: var(--color-sage);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 500;
+  min-height: 60px;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: color-mix(in srgb, var(--color-sage) 90%, black);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 2px solid var(--color-charcoal);
+  color: var(--color-charcoal);
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 500;
+  min-height: 60px;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-charcoal);
+  color: var(--color-cream);
+}
+
+.card {
+  background-color: var(--color-beige);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid color-mix(in srgb, var(--color-sandstone) 20%, transparent);
+}
