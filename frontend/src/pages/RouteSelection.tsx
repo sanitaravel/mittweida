@@ -1,37 +1,37 @@
-import { Link } from 'wouter'
-import { Filter, ArrowLeft } from 'lucide-react'
-import { useState } from 'react'
+import { Link } from "wouter";
+import { Filter, ArrowLeft } from "lucide-react";
+import { useState } from "react";
 
 interface Route {
-  id: string
-  name: string
-  duration: string
-  stops: number
-  features: string[]
-  color: string
+  id: string;
+  name: string;
+  duration: string;
+  stops: number;
+  features: string[];
+  color: string;
 }
 
 const routes: Route[] = [
   {
-    id: 'historical',
-    name: 'Short Historical Walk',
-    duration: '30 min',
+    id: "historical",
+    name: "Short Historical Walk",
+    duration: "30 min",
     stops: 5,
-    features: ['benches along the way', 'wheelchair accessible'],
-    color: 'green'
+    features: ["benches along the way", "wheelchair accessible"],
+    color: "green",
   },
   {
-    id: 'church-park',
-    name: 'Church & Park Stroll',
-    duration: '45 min',
+    id: "church-park",
+    name: "Church & Park Stroll",
+    duration: "45 min",
     stops: 4,
-    features: ['cafés nearby', 'shaded paths'],
-    color: 'orange'
-  }
-]
+    features: ["cafés nearby", "shaded paths"],
+    color: "orange",
+  },
+];
 
 const RouteSelection = () => {
-  const [selectedRoute, setSelectedRoute] = useState<string | null>(null)
+  const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
@@ -42,11 +42,13 @@ const RouteSelection = () => {
             <Filter size={24} className="text-charcoal" />
           </button>
         </div>
-        
+
         {/* Placeholder map with route visualization */}
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
-            <div className="text-body text-lg text-charcoal/60 mb-4">Interactive Map</div>
+            <div className="text-body text-lg text-charcoal/60 mb-4">
+              Interactive Map
+            </div>
             <div className="space-y-2 text-sm text-charcoal/80">
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
@@ -70,13 +72,15 @@ const RouteSelection = () => {
         <p className="text-body text-lg text-charcoal/80 mb-6">
           Tap on a route line to see details:
         </p>
-        
+
         <div className="space-y-4 mb-8">
           {routes.map((route) => (
             <div
               key={route.id}
               className={`card cursor-pointer transition-all duration-200 ${
-                selectedRoute === route.id ? 'ring-2 ring-sage bg-sage/10' : 'hover:bg-sandstone/10'
+                selectedRoute === route.id
+                  ? "ring-2 ring-sage bg-sage/10"
+                  : "hover:bg-sandstone/10"
               }`}
               onClick={() => setSelectedRoute(route.id)}
             >
@@ -84,7 +88,7 @@ const RouteSelection = () => {
                 {route.name} ({route.duration})
               </h3>
               <p className="text-body text-charcoal/80 mb-3">
-                • {route.stops} stops, {route.features.join(', ')}
+                • {route.stops} stops, {route.features.join(", ")}
               </p>
             </div>
           ))}
@@ -93,14 +97,16 @@ const RouteSelection = () => {
         {/* Action Buttons */}
         <div className="space-y-4">
           <Link href="/tour/historical">
-            <button 
-              className={`btn-primary ${!selectedRoute ? 'opacity-50 cursor-not-allowed' : ''}`}
+            <button
+              className={`btn-primary ${
+                !selectedRoute ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               disabled={!selectedRoute}
             >
               Continue
             </button>
           </Link>
-          
+
           <Link href="/">
             <button className="btn-secondary">
               <div className="flex items-center justify-center gap-2">
@@ -112,7 +118,7 @@ const RouteSelection = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default RouteSelection
+export default RouteSelection;

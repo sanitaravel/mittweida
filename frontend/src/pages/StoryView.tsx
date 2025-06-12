@@ -1,49 +1,52 @@
-import { useParams, Link } from 'wouter'
-import { ChevronLeft, ChevronRight, X, Volume2, VolumeX } from 'lucide-react'
-import { useState } from 'react'
+import { useParams, Link } from "wouter";
+import { ChevronLeft, ChevronRight, X, Volume2, VolumeX } from "lucide-react";
+import { useState } from "react";
 
 interface Story {
-  id: number
-  image: string
-  title: string
-  description: string
+  id: number;
+  image: string;
+  title: string;
+  description: string;
 }
 
 const stories: Story[] = [
   {
     id: 1,
-    image: '/api/placeholder/400/600',
-    title: 'Exterior View',
-    description: 'Built in the 14th century, this Gothic church has witnessed centuries of history.'
+    image: "/api/placeholder/400/600",
+    title: "Exterior View",
+    description:
+      "Built in the 14th century, this Gothic church has witnessed centuries of history.",
   },
   {
     id: 2,
-    image: '/api/placeholder/400/600',
-    title: 'Stained Glass',
-    description: 'The magnificent stained glass windows tell stories of saints and local legends.'
+    image: "/api/placeholder/400/600",
+    title: "Stained Glass",
+    description:
+      "The magnificent stained glass windows tell stories of saints and local legends.",
   },
   {
     id: 3,
-    image: '/api/placeholder/400/600',
-    title: 'Stone Carvings',
-    description: 'Intricate stone carvings showcase the masterful craftsmanship of medieval artisans.'
-  }
-]
+    image: "/api/placeholder/400/600",
+    title: "Stone Carvings",
+    description:
+      "Intricate stone carvings showcase the masterful craftsmanship of medieval artisans.",
+  },
+];
 
 const StoryView = () => {
-  const { stopId } = useParams<{ stopId: string }>()
-  const [currentStory, setCurrentStory] = useState(0)
-  const [audioEnabled, setAudioEnabled] = useState(false)
+  const { stopId } = useParams<{ stopId: string }>();
+  const [currentStory, setCurrentStory] = useState(0);
+  const [audioEnabled, setAudioEnabled] = useState(false);
 
   const nextStory = () => {
-    setCurrentStory((prev) => (prev + 1) % stories.length)
-  }
+    setCurrentStory((prev) => (prev + 1) % stories.length);
+  };
 
   const prevStory = () => {
-    setCurrentStory((prev) => (prev - 1 + stories.length) % stories.length)
-  }
+    setCurrentStory((prev) => (prev - 1 + stories.length) % stories.length);
+  };
 
-  const story = stories[currentStory]
+  const story = stories[currentStory];
 
   return (
     <div className="min-h-screen bg-black text-white relative">
@@ -51,12 +54,12 @@ const StoryView = () => {
       <div className="h-screen flex flex-col">
         {/* Image Area */}
         <div className="flex-1 relative">
-          <img 
-            src={story.image} 
+          <img
+            src={story.image}
             alt={story.title}
             className="w-full h-full object-cover"
           />
-          
+
           {/* Navigation Arrows */}
           {currentStory > 0 && (
             <button
@@ -66,7 +69,7 @@ const StoryView = () => {
               <ChevronLeft size={24} />
             </button>
           )}
-          
+
           {currentStory < stories.length - 1 && (
             <button
               onClick={nextStory}
@@ -90,7 +93,7 @@ const StoryView = () => {
               <div
                 key={index}
                 className={`flex-1 h-1 rounded-full ${
-                  index === currentStory ? 'bg-white' : 'bg-white/30'
+                  index === currentStory ? "bg-white" : "bg-white/30"
                 }`}
               />
             ))}
@@ -99,9 +102,7 @@ const StoryView = () => {
 
         {/* Text Content */}
         <div className="bg-gradient-to-t from-black/90 to-transparent absolute bottom-0 left-0 right-0 p-6">
-          <h2 className="text-2xl font-bold mb-2 text-white">
-            {story.title}
-          </h2>
+          <h2 className="text-2xl font-bold mb-2 text-white">{story.title}</h2>
           <p className="text-lg text-white/90 leading-relaxed">
             {story.description}
           </p>
@@ -116,7 +117,7 @@ const StoryView = () => {
         </button>
       </Link>
     </div>
-  )
-}
+  );
+};
 
-export default StoryView
+export default StoryView;

@@ -1,10 +1,16 @@
-import { useParams, Link } from 'wouter'
-import { Filter, Play, Image as ImageIcon, Pause, SkipForward } from 'lucide-react'
+import { useParams, Link } from "wouter";
+import {
+  Filter,
+  Play,
+  Image as ImageIcon,
+  Pause,
+  SkipForward,
+} from "lucide-react";
 
 const GuidedTour = () => {
-  const { routeId } = useParams<{ routeId: string }>()
-  const currentStop = 1
-  const totalStops = 5
+  const { routeId } = useParams<{ routeId: string }>();
+  const currentStop = 1;
+  const totalStops = 5;
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
@@ -15,7 +21,7 @@ const GuidedTour = () => {
             <Filter size={24} className="text-charcoal" />
           </button>
         </div>
-        
+
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <div className="text-body text-lg text-charcoal/60 mb-4">
@@ -48,21 +54,22 @@ const GuidedTour = () => {
               {currentStop}/{totalStops}
             </span>
           </div>
-          
+
           <div className="space-y-4 mb-6">
             <p className="text-body text-lg text-charcoal leading-relaxed">
-              Built in the 14th century, St. Afra Church stands as one of Mittweida's 
-              most significant historical landmarks. The Gothic architecture features 
-              beautiful stained glass windows and intricate stone carvings.
+              Built in the 14th century, St. Afra Church stands as one of
+              Mittweida's most significant historical landmarks. The Gothic
+              architecture features beautiful stained glass windows and
+              intricate stone carvings.
             </p>
-            
+
             {/* Media Controls */}
             <div className="flex gap-3">
               <button className="flex items-center gap-2 bg-dustyBlue text-white px-6 py-3 rounded-xl hover:bg-dustyBlue/90 transition-colors">
                 <Play size={20} />
                 Play Audio
               </button>
-              
+
               <Link href="/story/church">
                 <button className="flex items-center gap-2 bg-terracotta text-white px-6 py-3 rounded-xl hover:bg-terracotta/90 transition-colors">
                   <ImageIcon size={20} />
@@ -70,7 +77,7 @@ const GuidedTour = () => {
                 </button>
               </Link>
             </div>
-            
+
             <div className="text-body text-sm text-charcoal/70 bg-sage/10 p-3 rounded-lg">
               ♿ Accessibility: Bench nearby for resting
             </div>
@@ -87,7 +94,7 @@ const GuidedTour = () => {
               Next Stop
             </div>
           </button>
-          
+
           <button className="btn-secondary">
             <div className="flex items-center justify-center gap-2">
               <Pause size={20} />
@@ -97,7 +104,7 @@ const GuidedTour = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default GuidedTour
+export default GuidedTour;

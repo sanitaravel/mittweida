@@ -4,7 +4,7 @@
 @theme {
   --font-serif: 'Playfair Display', serif;
   --font-sans: 'Open Sans', sans-serif;
-  
+
   --color-sandstone: #c2b280;
   --color-beige: #f5f0e1;
   --color-cream: #fffdf6;
@@ -23,7 +23,12 @@ body {
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-serif);
 }
 

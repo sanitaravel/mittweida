@@ -1,28 +1,28 @@
-import { Link } from 'wouter'
-import { Download, Mail, Printer, RotateCcw, LogOut } from 'lucide-react'
+import { Link } from "wouter";
+import { Download, Mail, Printer, RotateCcw, LogOut } from "lucide-react";
 
 const Completion = () => {
   const tourStats = {
-    name: 'Short Historical Walk',
+    name: "Short Historical Walk",
     stops: 5,
-    duration: '30 min',
-    date: new Date().toLocaleDateString()
-  }
+    duration: "30 min",
+    date: new Date().toLocaleDateString(),
+  };
 
   const handleDownloadPDF = () => {
     // Implement PDF download
-    console.log('Downloading PDF...')
-  }
+    console.log("Downloading PDF...");
+  };
 
   const handleEmailJournal = () => {
     // Implement email functionality
-    console.log('Emailing journal...')
-  }
+    console.log("Emailing journal...");
+  };
 
   const handlePrint = () => {
     // Implement print functionality
-    window.print()
-  }
+    window.print();
+  };
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
@@ -36,7 +36,8 @@ const Completion = () => {
           <div className="text-body text-xl text-charcoal/80 space-y-2">
             <p>You completed the tour:</p>
             <p className="font-semibold">
-              "{tourStats.name}" • {tourStats.stops} stops • {tourStats.duration}
+              "{tourStats.name}" • {tourStats.stops} stops •{" "}
+              {tourStats.duration}
             </p>
             <p className="text-lg text-charcoal/60">
               Completed on {tourStats.date}
@@ -49,30 +50,36 @@ const Completion = () => {
           <h2 className="text-display text-2xl font-semibold text-charcoal text-center mb-6">
             Your Travel Journal
           </h2>
-          
+
           <div className="grid grid-cols-3 gap-6">
             <button
               onClick={handleDownloadPDF}
               className="flex flex-col items-center gap-3 p-6 bg-beige rounded-xl border border-sandstone/20 hover:bg-sandstone/20 transition-colors"
             >
               <Download size={32} className="text-charcoal" />
-              <span className="text-body text-sm font-medium text-charcoal">PDF</span>
+              <span className="text-body text-sm font-medium text-charcoal">
+                PDF
+              </span>
             </button>
-            
+
             <button
               onClick={handleEmailJournal}
               className="flex flex-col items-center gap-3 p-6 bg-beige rounded-xl border border-sandstone/20 hover:bg-sandstone/20 transition-colors"
             >
               <Mail size={32} className="text-charcoal" />
-              <span className="text-body text-sm font-medium text-charcoal">Email</span>
+              <span className="text-body text-sm font-medium text-charcoal">
+                Email
+              </span>
             </button>
-            
+
             <button
               onClick={handlePrint}
               className="flex flex-col items-center gap-3 p-6 bg-beige rounded-xl border border-sandstone/20 hover:bg-sandstone/20 transition-colors"
             >
               <Printer size={32} className="text-charcoal" />
-              <span className="text-body text-sm font-medium text-charcoal">Print</span>
+              <span className="text-body text-sm font-medium text-charcoal">
+                Print
+              </span>
             </button>
           </div>
         </div>
@@ -88,7 +95,7 @@ const Completion = () => {
                 </div>
               </button>
             </Link>
-            
+
             <Link href="/">
               <button className="btn-primary">
                 <div className="flex items-center justify-center gap-2">
@@ -108,7 +115,7 @@ const Completion = () => {
         </p>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Completion
+export default Completion;

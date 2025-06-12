@@ -1,36 +1,52 @@
-import { Link } from 'wouter'
-import { Filter, ArrowLeft } from 'lucide-react'
-import { useState } from 'react'
+import { Link } from "wouter";
+import { Filter, ArrowLeft } from "lucide-react";
+import { useState } from "react";
 
 interface Attraction {
-  id: string
-  name: string
-  type: string
-  selected: boolean
+  id: string;
+  name: string;
+  type: string;
+  selected: boolean;
 }
 
 const attractions: Attraction[] = [
-  { id: 'church', name: 'St. Afra Church', type: 'historical', selected: false },
-  { id: 'castle', name: 'Mittweida Castle', type: 'historical', selected: false },
-  { id: 'park', name: 'Town Park', type: 'nature', selected: false },
-  { id: 'cafe', name: 'Local Café "Kaffeestube"', type: 'cultural', selected: false },
-  { id: 'museum', name: 'Textile Museum', type: 'cultural', selected: false }
-]
+  {
+    id: "church",
+    name: "St. Afra Church",
+    type: "historical",
+    selected: false,
+  },
+  {
+    id: "castle",
+    name: "Mittweida Castle",
+    type: "historical",
+    selected: false,
+  },
+  { id: "park", name: "Town Park", type: "nature", selected: false },
+  {
+    id: "cafe",
+    name: 'Local Café "Kaffeestube"',
+    type: "cultural",
+    selected: false,
+  },
+  { id: "museum", name: "Textile Museum", type: "cultural", selected: false },
+];
 
 const CreateTour = () => {
-  const [selectedAttractions, setSelectedAttractions] = useState<Attraction[]>(attractions)
+  const [selectedAttractions, setSelectedAttractions] =
+    useState<Attraction[]>(attractions);
 
   const toggleAttraction = (id: string) => {
-    setSelectedAttractions(prev => 
-      prev.map(attraction => 
-        attraction.id === id 
+    setSelectedAttractions((prev) =>
+      prev.map((attraction) =>
+        attraction.id === id
           ? { ...attraction, selected: !attraction.selected }
           : attraction
       )
-    )
-  }
+    );
+  };
 
-  const selectedCount = selectedAttractions.filter(a => a.selected).length
+  const selectedCount = selectedAttractions.filter((a) => a.selected).length;
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
@@ -50,10 +66,10 @@ const CreateTour = () => {
       <div className="h-[40vh] bg-sandstone/20 relative">
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
-            <div className="text-body text-lg text-charcoal/60 mb-4">Interactive Map</div>
-            <div className="text-sm text-charcoal/80">
-              Tap to add locations
+            <div className="text-body text-lg text-charcoal/60 mb-4">
+              Interactive Map
             </div>
+            <div className="text-sm text-charcoal/80">Tap to add locations</div>
             <div className="mt-4 space-y-2 text-sm text-charcoal/80">
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
@@ -73,7 +89,7 @@ const CreateTour = () => {
         <h2 className="text-display text-xl font-semibold text-charcoal mb-6">
           Select Attractions ({selectedCount} selected)
         </h2>
-        
+
         <div className="space-y-4 mb-8">
           {selectedAttractions.map((attraction) => (
             <label
@@ -100,16 +116,20 @@ const CreateTour = () => {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4">
-          <button 
-            className={`btn-secondary ${selectedCount === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+          <button
+            className={`btn-secondary ${
+              selectedCount === 0 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             disabled={selectedCount === 0}
           >
             Preview Route
           </button>
-          
+
           <Link href={selectedCount > 0 ? "/tour/custom" : "#"}>
-            <button 
-              className={`btn-primary ${selectedCount === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            <button
+              className={`btn-primary ${
+                selectedCount === 0 ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               disabled={selectedCount === 0}
             >
               Start Tour
@@ -127,7 +147,7 @@ const CreateTour = () => {
         </Link>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CreateTour
+export default CreateTour;
