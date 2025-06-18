@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSettings } from "../contexts/SettingsContext";
 import type { TextSize, Language } from "../contexts/SettingsContext";
 import Notification from "../components/Notification";
+import { useTranslation } from "../hooks/useTranslation";
 
 const Settings = () => {
   const {
@@ -17,6 +18,8 @@ const Settings = () => {
     setLanguage,
   } = useSettings();
 
+  const { t } = useTranslation();
+
   const [notification, setNotification] = useState({
     show: false,
     message: "",
@@ -28,24 +31,22 @@ const Settings = () => {
 
   const handleTextSizeChange = (size: TextSize) => {
     setTextSize(size);
-    showNotification(`Text size changed to ${size}`);
+    showNotification(t("textSizeChanged", { size: t(size) }));
   };
 
   const handleAudioToggle = (enabled: boolean) => {
     setAudioNarration(enabled);
-    showNotification(`Audio narration ${enabled ? "enabled" : "disabled"}`);
+    showNotification(enabled ? t("audioNarrationEnabled") : t("audioNarrationDisabled"));
   };
 
   const handleContrastToggle = (enabled: boolean) => {
     setHighContrast(enabled);
-    showNotification(`High contrast mode ${enabled ? "enabled" : "disabled"}`);
+    showNotification(enabled ? t("highContrastEnabled") : t("highContrastDisabled"));
   };
 
   const handleLanguageChange = (lang: Language) => {
     setLanguage(lang);
-    showNotification(
-      `Language changed to ${lang === "en" ? "English" : "German"}`
-    );
+    showNotification(t("languageChanged", { language: lang === "en" ? t("english") : t("german") }));
   };
   return (
     <div className="min-h-screen bg-cream">
@@ -53,29 +54,27 @@ const Settings = () => {
         show={notification.show}
         message={notification.message}
         onHide={() => setNotification({ show: false, message: "" })}
-      />
-      {/* Header */}
+      />      {/* Header */}
       <header className="p-6 border-b border-sandstone/20">
         <h1 className="text-display text-2xl font-bold text-charcoal">
-          Settings
+          {t("settings")}
         </h1>
       </header>
       {/* Settings Content */}
       <div className="p-6 space-y-8">
-        {" "}
-        {/* Text Size */}
+        {" "}        {/* Text Size */}
         <div className="space-y-4">
           <h2 className="text-display text-xl font-semibold text-charcoal">
-            Text Size:
+            {t("textSize")}:
           </h2>
 
           {/* Preview Text */}
           <div className="card bg-white border border-sandstone/30">
             <h3 className="text-display font-semibold text-charcoal mb-2">
-              Preview:
+              {t("preview")}:
             </h3>
             <p className="text-body text-charcoal/80">
-              This is how text will appear in the app with your selected size.
+              {t("previewText")}
             </p>
           </div>
 
@@ -92,7 +91,7 @@ const Settings = () => {
                 }`}
               >
                 <div className="flex flex-col items-center gap-2">
-                  <span className="font-medium">{size}</span>
+                  <span className="font-medium">{t(size)}</span>
                   <span
                     className={`text-xs ${
                       size === "small"
@@ -102,17 +101,16 @@ const Settings = () => {
                         : "text-[16px]"
                     }`}
                   >
-                    Sample
+                    {t("sample")}
                   </span>
                 </div>
               </button>
             ))}
           </div>
-        </div>
-        {/* Audio Narration */}
+        </div>        {/* Audio Narration */}
         <div className="flex justify-between items-center">
           <h2 className="text-display text-xl font-semibold text-charcoal">
-            Enable Audio Narration:
+            {t("enableAudioNarration")}:
           </h2>
           <label className="relative inline-flex items-center cursor-pointer">
             {" "}
@@ -121,6 +119,7 @@ const Settings = () => {
               checked={audioNarration}
               onChange={(e) => handleAudioToggle(e.target.checked)}
               className="sr-only"
+              aria-label={t("toggleAudioNarration")}
             />
             <div
               className={`w-14 h-8 rounded-full transition-colors ${
@@ -134,11 +133,10 @@ const Settings = () => {
               />
             </div>
           </label>
-        </div>
-        {/* High Contrast Mode */}
+        </div>        {/* High Contrast Mode */}
         <div className="flex justify-between items-center">
           <h2 className="text-display text-xl font-semibold text-charcoal">
-            High Contrast Mode:
+            {t("highContrastMode")}:
           </h2>
           <label className="relative inline-flex items-center cursor-pointer">
             {" "}
@@ -147,6 +145,7 @@ const Settings = () => {
               checked={highContrast}
               onChange={(e) => handleContrastToggle(e.target.checked)}
               className="sr-only"
+              aria-label={t("toggleHighContrast")}
             />
             <div
               className={`w-14 h-8 rounded-full transition-colors ${
@@ -160,19 +159,19 @@ const Settings = () => {
               />
             </div>
           </label>
-        </div>
-        {/* Language */}
+        </div>        {/* Language */}
         <div className="space-y-4">
           <h2 className="text-display text-xl font-semibold text-charcoal">
-            Language:
+            {t("language")}:
           </h2>{" "}
           <select
             value={language}
             onChange={(e) => handleLanguageChange(e.target.value as Language)}
             className="w-full p-4 rounded-xl border-2 border-charcoal bg-white text-charcoal text-lg focus:ring-2 focus:ring-sage focus:border-sage"
+            aria-label={t("selectLanguage")}
           >
-            <option value="en">English</option>
-            <option value="de">German</option>
+            <option value="en">{t("english")}</option>
+            <option value="de">{t("german")}</option>
           </select>
         </div>
       </div>{" "}
@@ -182,7 +181,7 @@ const Settings = () => {
           <button className="btn-primary">
             <div className="flex items-center justify-center gap-2">
               <ArrowLeft size={20} />
-              Back to Home
+              {t("backToHome")}
             </div>
           </button>
         </Link>

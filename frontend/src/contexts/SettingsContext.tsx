@@ -109,10 +109,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     setSettings(newSettings);
     saveToLocalStorage(newSettings);
   };
-
   const saveSettings = () => {
     saveToLocalStorage(settings);
-    // Could add success notification here
     console.log("Settings saved successfully");
   };
 

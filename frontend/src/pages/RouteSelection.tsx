@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { Filter, ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface Route {
   id: string;
@@ -14,23 +15,24 @@ interface Route {
 const routes: Route[] = [
   {
     id: "historical",
-    name: "Short Historical Walk",
+    name: "shortHistoricalWalk",
     duration: "30 min",
     stops: 5,
-    features: ["benches along the way", "wheelchair accessible"],
+    features: ["benchesAlongWay", "wheelchairAccessible"],
     color: "green",
   },
   {
     id: "church-park",
-    name: "Church & Park Stroll",
+    name: "churchParkStroll",
     duration: "45 min",
     stops: 4,
-    features: ["cafés nearby", "shaded paths"],
+    features: ["cafesNearby", "shadedPaths"],
     color: "orange",
   },
 ];
 
 const RouteSelection = () => {
+  const { t } = useTranslation();
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
 
   return (
@@ -41,36 +43,32 @@ const RouteSelection = () => {
           <button className="bg-white p-3 rounded-xl shadow-lg hover:bg-beige transition-colors">
             <Filter size={24} className="text-charcoal" />
           </button>
-        </div>
-
-        {/* Placeholder map with route visualization */}
+        </div>        {/* Placeholder map with route visualization */}
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <div className="text-body text-lg text-charcoal/60 mb-4">
-              Interactive Map
+              {t("interactiveMap")}
             </div>
             <div className="space-y-2 text-sm text-charcoal/80">
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span>Your Location</span>
+                <span>{t("yourLocation")}</span>
               </div>
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span>Historical Route (1-5)</span>
+                <span>{t("historicalRoute")} (1-5)</span>
               </div>
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span>Church Route (A-D)</span>
+                <span>{t("churchRoute")} (A-D)</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Route Details */}
+      </div>      {/* Route Details */}
       <div className="flex-1 p-6">
         <p className="text-body text-lg text-charcoal/80 mb-6">
-          Tap on a route line to see details:
+          {t("tapOnRoute")}
         </p>
 
         <div className="space-y-4 mb-8">
@@ -85,10 +83,10 @@ const RouteSelection = () => {
               onClick={() => setSelectedRoute(route.id)}
             >
               <h3 className="text-display text-xl font-semibold text-charcoal mb-2">
-                {route.name} ({route.duration})
+                {t(route.name as any)} ({route.duration})
               </h3>
               <p className="text-body text-charcoal/80 mb-3">
-                • {route.stops} stops, {route.features.join(", ")}
+                • {route.stops} {t("stops")}, {route.features.map(feature => t(feature as any)).join(", ")}
               </p>
             </div>
           ))}
@@ -103,7 +101,7 @@ const RouteSelection = () => {
               }`}
               disabled={!selectedRoute}
             >
-              Continue
+              {t("continue")}
             </button>
           </Link>
 
@@ -111,7 +109,7 @@ const RouteSelection = () => {
             <button className="btn-secondary">
               <div className="flex items-center justify-center gap-2">
                 <ArrowLeft size={20} />
-                Back
+                {t("back")}
               </div>
             </button>
           </Link>

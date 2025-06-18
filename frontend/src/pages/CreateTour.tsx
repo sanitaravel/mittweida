@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { Filter, ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface Attraction {
   id: string;
@@ -12,27 +13,28 @@ interface Attraction {
 const attractions: Attraction[] = [
   {
     id: "church",
-    name: "St. Afra Church",
+    name: "stAfraChurch",
     type: "historical",
     selected: false,
   },
   {
     id: "castle",
-    name: "Mittweida Castle",
+    name: "mittweidaCastle",
     type: "historical",
     selected: false,
   },
-  { id: "park", name: "Town Park", type: "nature", selected: false },
+  { id: "park", name: "townPark", type: "nature", selected: false },
   {
     id: "cafe",
-    name: 'Local Café "Kaffeestube"',
+    name: "localCafe",
     type: "cultural",
     selected: false,
   },
-  { id: "museum", name: "Textile Museum", type: "cultural", selected: false },
+  { id: "museum", name: "textileMuseum", type: "cultural", selected: false },
 ];
 
 const CreateTour = () => {
+  const { t } = useTranslation();
   const [selectedAttractions, setSelectedAttractions] =
     useState<Attraction[]>(attractions);
 
@@ -49,12 +51,11 @@ const CreateTour = () => {
   const selectedCount = selectedAttractions.filter((a) => a.selected).length;
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      {/* Header */}
+    <div className="min-h-screen bg-cream flex flex-col">      {/* Header */}
       <header className="p-6 border-b border-sandstone/20">
         <div className="flex justify-between items-center">
           <h1 className="text-display text-2xl font-bold text-charcoal">
-            Create Your Own Tour
+            {t("createYourOwnTour")}
           </h1>
           <button className="bg-white p-3 rounded-xl shadow-lg hover:bg-beige transition-colors">
             <Filter size={24} className="text-charcoal" />
@@ -67,17 +68,17 @@ const CreateTour = () => {
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <div className="text-body text-lg text-charcoal/60 mb-4">
-              Interactive Map
+              {t("interactiveMap")}
             </div>
-            <div className="text-sm text-charcoal/80">Tap to add locations</div>
+            <div className="text-sm text-charcoal/80">{t("tapToAddLocations")}</div>
             <div className="mt-4 space-y-2 text-sm text-charcoal/80">
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span>Your Location</span>
+                <span>{t("yourLocation")}</span>
               </div>
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 bg-sage rounded-full"></div>
-                <span>Available Spots</span>
+                <span>{t("availableSpots")}</span>
               </div>
             </div>
           </div>
@@ -87,7 +88,7 @@ const CreateTour = () => {
       {/* Attractions List */}
       <div className="flex-1 p-6">
         <h2 className="text-display text-xl font-semibold text-charcoal mb-6">
-          Select Attractions ({selectedCount} selected)
+          {t("selectAttractions")} ({selectedCount} {t("selected")})
         </h2>
 
         <div className="space-y-4 mb-8">
@@ -101,20 +102,17 @@ const CreateTour = () => {
                 checked={attraction.selected}
                 onChange={() => toggleAttraction(attraction.id)}
                 className="w-6 h-6 rounded border-2 border-charcoal text-sage focus:ring-sage focus:ring-2"
-              />
-              <div className="flex-1">
+              />              <div className="flex-1">
                 <div className="text-body text-lg text-charcoal font-medium">
-                  {attraction.name}
+                  {t(attraction.name as any)}
                 </div>
                 <div className="text-body text-sm text-charcoal/60 capitalize">
-                  {attraction.type}
+                  {t(attraction.type as any)}
                 </div>
               </div>
             </label>
           ))}
-        </div>
-
-        {/* Action Buttons */}
+        </div>        {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4">
           <button
             className={`btn-secondary ${
@@ -122,7 +120,7 @@ const CreateTour = () => {
             }`}
             disabled={selectedCount === 0}
           >
-            Preview Route
+            {t("previewRoute")}
           </button>
 
           <Link href={selectedCount > 0 ? "/tour/custom" : "#"}>
@@ -132,7 +130,7 @@ const CreateTour = () => {
               }`}
               disabled={selectedCount === 0}
             >
-              Start Tour
+              {t("startTour")}
             </button>
           </Link>
         </div>
@@ -141,7 +139,7 @@ const CreateTour = () => {
           <button className="btn-secondary mt-4">
             <div className="flex items-center justify-center gap-2">
               <ArrowLeft size={20} />
-              Back
+              {t("back")}
             </div>
           </button>
         </Link>

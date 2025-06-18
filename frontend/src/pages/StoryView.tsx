@@ -1,6 +1,7 @@
 import { useParams, Link } from "wouter";
 import { ChevronLeft, ChevronRight, X, Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface Story {
   id: number;
@@ -9,34 +10,32 @@ interface Story {
   description: string;
 }
 
-const stories: Story[] = [
-  {
-    id: 1,
-    image: "/api/placeholder/400/600",
-    title: "Exterior View",
-    description:
-      "Built in the 14th century, this Gothic church has witnessed centuries of history.",
-  },
-  {
-    id: 2,
-    image: "/api/placeholder/400/600",
-    title: "Stained Glass",
-    description:
-      "The magnificent stained glass windows tell stories of saints and local legends.",
-  },
-  {
-    id: 3,
-    image: "/api/placeholder/400/600",
-    title: "Stone Carvings",
-    description:
-      "Intricate stone carvings showcase the masterful craftsmanship of medieval artisans.",
-  },
-];
-
 const StoryView = () => {
+  const { t } = useTranslation();
   const { stopId } = useParams<{ stopId: string }>();
   const [currentStory, setCurrentStory] = useState(0);
   const [audioEnabled, setAudioEnabled] = useState(false);
+
+  const stories: Story[] = [
+    {
+      id: 1,
+      image: "/api/placeholder/400/600",
+      title: t("exteriorView"),
+      description: t("exteriorDescription"),
+    },
+    {
+      id: 2,
+      image: "/api/placeholder/400/600",
+      title: t("stainedGlass"),
+      description: t("stainedGlassDescription"),
+    },
+    {
+      id: 3,
+      image: "/api/placeholder/400/600",
+      title: t("stoneCarvings"),
+      description: t("stoneCarvingsDescription"),
+    },
+  ];
 
   const nextStory = () => {
     setCurrentStory((prev) => (prev + 1) % stories.length);
@@ -107,13 +106,11 @@ const StoryView = () => {
             {story.description}
           </p>
         </div>
-      </div>
-
-      {/* Exit Button */}
+      </div>      {/* Exit Button */}
       <Link href="/tour/historical">
         <button className="absolute top-6 left-1/2 -translate-x-1/2 bg-black/50 text-white px-6 py-3 rounded-full hover:bg-black/70 transition-colors flex items-center gap-2">
           <X size={20} />
-          Exit Story
+          {t("exitStory")}
         </button>
       </Link>
     </div>
