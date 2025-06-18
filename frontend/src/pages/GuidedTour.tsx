@@ -22,7 +22,8 @@ const GuidedTour = () => {
           <button className="bg-white p-3 rounded-xl shadow-lg hover:bg-beige transition-colors">
             <Filter size={24} className="text-charcoal" />
           </button>
-        </div>        <div className="h-full flex items-center justify-center">
+        </div>{" "}
+        <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <div className="text-body text-lg text-charcoal/60 mb-4">
               {t("interactiveMap")} - {routeId} {t("route")}
@@ -42,9 +43,10 @@ const GuidedTour = () => {
           </div>
         </div>
       </div>
-
       {/* Stop Information */}
-      <div className="flex-1 p-6">        <div className="card">
+      <div className="flex-1 p-6">
+        {" "}
+        <div className="card">
           <div className="flex justify-between items-start mb-4">
             <h2 className="text-display text-2xl font-bold text-charcoal">
               {t("stop")} {currentStop}: {t("stAfraChurch")}
@@ -79,7 +81,8 @@ const GuidedTour = () => {
             </div>
           </div>
         </div>
-      </div>      {/* Navigation Buttons */}
+      </div>{" "}
+      {/* Navigation Buttons */}
       <div className="p-6 bg-cream border-t border-sandstone/20">
         <div className="grid grid-cols-2 gap-4">
           <button className="btn-primary">

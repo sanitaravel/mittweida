@@ -1,4 +1,5 @@
-export const en = {  // Navigation
+export const en = {
+  // Navigation
   back: "Back",
   backToHome: "Back to Home",
   next: "Next",
@@ -6,26 +7,27 @@ export const en = {  // Navigation
   finish: "Finish",
   start: "Start",
   continue: "Continue",
-  
+
   // Settings
   settings: "Settings",
   textSize: "Text Size",
   preview: "Preview",
-  previewText: "This is how text will appear in the app with your selected size.",
+  previewText:
+    "This is how text will appear in the app with your selected size.",
   sample: "Sample",
   enableAudioNarration: "Enable Audio Narration",
   highContrastMode: "High Contrast Mode",
   language: "Language",
-  
+
   // Text sizes
   small: "Small",
   medium: "Medium",
   large: "Large",
-  
+
   // Languages
   english: "English",
   german: "German",
-  
+
   // Notifications
   textSizeChanged: "Text size changed to {{size}}",
   audioNarrationEnabled: "Audio narration enabled",
@@ -34,16 +36,16 @@ export const en = {  // Navigation
   highContrastDisabled: "High contrast mode disabled",
   languageChanged: "Language changed to {{language}}",
   settingsSaved: "Settings saved successfully",
-    // Welcome page
+  // Welcome page
   welcome: "Welcome",
   welcomeTitle: "Welcome to Mittweida",
   welcomeSubtitle: "Let's explore at your pace",
   startExploring: "Start Exploring",
-  
+
   // Tour selection
   selectTour: "Select a Suggested Tour",
   chooseTour: "What would you like to do?",
-    // Create tour
+  // Create tour
   createTour: "Create Tour",
   createCustomTour: "Create a Custom Tour",
   createYourOwnTour: "Create Your Own Tour",
@@ -55,7 +57,7 @@ export const en = {  // Navigation
   selected: "selected",
   previewRoute: "Preview Route",
   startTour: "Start Tour",
-  
+
   // Attractions
   stAfraChurch: "St. Afra Church",
   mittweidaCastle: "Mittweida Castle",
@@ -65,7 +67,7 @@ export const en = {  // Navigation
   historical: "historical",
   nature: "nature",
   cultural: "cultural",
-    // Guided tour
+  // Guided tour
   guidedTour: "Guided Tour",
   route: "Route",
   currentStop: "Current Stop",
@@ -76,19 +78,23 @@ export const en = {  // Navigation
   benchNearby: "Bench nearby for resting",
   nextStop: "Next Stop",
   pauseTour: "Pause Tour",
-  
+
   // Church location
-  stAfraChurchDescription: "Built in the 14th century, St. Afra Church stands as one of Mittweida's most significant historical landmarks. The Gothic architecture features beautiful stained glass windows and intricate stone carvings.",
-    // Story view
+  stAfraChurchDescription:
+    "Built in the 14th century, St. Afra Church stands as one of Mittweida's most significant historical landmarks. The Gothic architecture features beautiful stained glass windows and intricate stone carvings.",
+  // Story view
   storyView: "Story View",
   exitStory: "Exit Story",
   exteriorView: "Exterior View",
   stainedGlass: "Stained Glass",
   stoneCarvings: "Stone Carvings",
-  exteriorDescription: "Built in the 14th century, this Gothic church has witnessed centuries of history.",
-  stainedGlassDescription: "The magnificent stained glass windows tell stories of saints and local legends.",
-  stoneCarvingsDescription: "Intricate stone carvings showcase the masterful craftsmanship of medieval artisans.",
-    // Route selection
+  exteriorDescription:
+    "Built in the 14th century, this Gothic church has witnessed centuries of history.",
+  stainedGlassDescription:
+    "The magnificent stained glass windows tell stories of saints and local legends.",
+  stoneCarvingsDescription:
+    "Intricate stone carvings showcase the masterful craftsmanship of medieval artisans.",
+  // Route selection
   routeSelection: "Route Selection",
   tapOnRoute: "Tap on a route line to see details:",
   shortHistoricalWalk: "Short Historical Walk",
@@ -100,7 +106,7 @@ export const en = {  // Navigation
   stops: "stops",
   historicalRoute: "Historical Route",
   churchRoute: "Church Route",
-    // Completion
+  // Completion
   completion: "Completion",
   congratulations: "Congratulations!",
   tourCompleted: "You have completed the tour",
@@ -112,7 +118,7 @@ export const en = {  // Navigation
   print: "Print",
   restartTour: "Restart Tour",
   thankYouExploring: "Thank you for exploring Mittweida with us!",
-  
+
   // Common
   loading: "Loading...",
   error: "Error",
@@ -122,7 +128,7 @@ export const en = {  // Navigation
   save: "Save",
   edit: "Edit",
   delete: "Delete",
-  
+
   // Accessibility
   closeNotification: "Close notification",
   toggleSettings: "Toggle settings",

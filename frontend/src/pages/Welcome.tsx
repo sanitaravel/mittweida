@@ -4,14 +4,14 @@ import { useTranslation } from "../hooks/useTranslation";
 
 const Welcome = () => {
   const { t } = useTranslation();
-  
+
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       {" "}
       {/* Header with Settings */}
       <header className="flex justify-end items-center p-6">
         <Link href="/settings">
-          <button 
+          <button
             className="p-3 rounded-full hover:bg-beige transition-colors"
             aria-label={t("toggleSettings")}
           >
@@ -19,7 +19,6 @@ const Welcome = () => {
           </button>
         </Link>
       </header>{" "}
-      
       {/* Main Content */}
       <main className="flex-1 flex flex-col justify-center items-center px-6 pb-16">
         {/* Welcome Text */}
@@ -31,7 +30,6 @@ const Welcome = () => {
             {t("welcomeSubtitle")}
           </p>
         </div>{" "}
-        
         {/* Question and Buttons */}
         <div className="w-full max-w-md space-y-4">
           <h2 className="text-display text-2xl md:text-3xl text-center text-charcoal mb-8">

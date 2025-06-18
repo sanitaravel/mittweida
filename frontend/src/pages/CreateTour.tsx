@@ -51,7 +51,9 @@ const CreateTour = () => {
   const selectedCount = selectedAttractions.filter((a) => a.selected).length;
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">      {/* Header */}
+    <div className="min-h-screen bg-cream flex flex-col">
+      {" "}
+      {/* Header */}
       <header className="p-6 border-b border-sandstone/20">
         <div className="flex justify-between items-center">
           <h1 className="text-display text-2xl font-bold text-charcoal">
@@ -62,7 +64,6 @@ const CreateTour = () => {
           </button>
         </div>
       </header>
-
       {/* Map Area */}
       <div className="h-[40vh] bg-sandstone/20 relative">
         <div className="h-full flex items-center justify-center">
@@ -70,7 +71,9 @@ const CreateTour = () => {
             <div className="text-body text-lg text-charcoal/60 mb-4">
               {t("interactiveMap")}
             </div>
-            <div className="text-sm text-charcoal/80">{t("tapToAddLocations")}</div>
+            <div className="text-sm text-charcoal/80">
+              {t("tapToAddLocations")}
+            </div>
             <div className="mt-4 space-y-2 text-sm text-charcoal/80">
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
@@ -84,13 +87,11 @@ const CreateTour = () => {
           </div>
         </div>
       </div>
-
       {/* Attractions List */}
       <div className="flex-1 p-6">
         <h2 className="text-display text-xl font-semibold text-charcoal mb-6">
           {t("selectAttractions")} ({selectedCount} {t("selected")})
         </h2>
-
         <div className="space-y-4 mb-8">
           {selectedAttractions.map((attraction) => (
             <label
@@ -102,7 +103,8 @@ const CreateTour = () => {
                 checked={attraction.selected}
                 onChange={() => toggleAttraction(attraction.id)}
                 className="w-6 h-6 rounded border-2 border-charcoal text-sage focus:ring-sage focus:ring-2"
-              />              <div className="flex-1">
+              />{" "}
+              <div className="flex-1">
                 <div className="text-body text-lg text-charcoal font-medium">
                   {t(attraction.name as any)}
                 </div>
@@ -112,7 +114,8 @@ const CreateTour = () => {
               </div>
             </label>
           ))}
-        </div>        {/* Action Buttons */}
+        </div>{" "}
+        {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4">
           <button
             className={`btn-secondary ${
@@ -134,7 +137,6 @@ const CreateTour = () => {
             </button>
           </Link>
         </div>
-
         <Link href="/">
           <button className="btn-secondary mt-4">
             <div className="flex items-center justify-center gap-2">

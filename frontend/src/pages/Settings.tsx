@@ -36,25 +36,35 @@ const Settings = () => {
 
   const handleAudioToggle = (enabled: boolean) => {
     setAudioNarration(enabled);
-    showNotification(enabled ? t("audioNarrationEnabled") : t("audioNarrationDisabled"));
+    showNotification(
+      enabled ? t("audioNarrationEnabled") : t("audioNarrationDisabled")
+    );
   };
 
   const handleContrastToggle = (enabled: boolean) => {
     setHighContrast(enabled);
-    showNotification(enabled ? t("highContrastEnabled") : t("highContrastDisabled"));
+    showNotification(
+      enabled ? t("highContrastEnabled") : t("highContrastDisabled")
+    );
   };
 
   const handleLanguageChange = (lang: Language) => {
     setLanguage(lang);
-    showNotification(t("languageChanged", { language: lang === "en" ? t("english") : t("german") }));
+    showNotification(
+      t("languageChanged", {
+        language: lang === "en" ? t("english") : t("german"),
+      })
+    );
   };
+
   return (
     <div className="min-h-screen bg-cream">
       <Notification
         show={notification.show}
         message={notification.message}
         onHide={() => setNotification({ show: false, message: "" })}
-      />      {/* Header */}
+      />{" "}
+      {/* Header */}
       <header className="p-6 border-b border-sandstone/20">
         <h1 className="text-display text-2xl font-bold text-charcoal">
           {t("settings")}
@@ -62,7 +72,8 @@ const Settings = () => {
       </header>
       {/* Settings Content */}
       <div className="p-6 space-y-8">
-        {" "}        {/* Text Size */}
+        {" "}
+        {/* Text Size */}
         <div className="space-y-4">
           <h2 className="text-display text-xl font-semibold text-charcoal">
             {t("textSize")}:
@@ -73,9 +84,7 @@ const Settings = () => {
             <h3 className="text-display font-semibold text-charcoal mb-2">
               {t("preview")}:
             </h3>
-            <p className="text-body text-charcoal/80">
-              {t("previewText")}
-            </p>
+            <p className="text-body text-charcoal/80">{t("previewText")}</p>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -107,7 +116,8 @@ const Settings = () => {
               </button>
             ))}
           </div>
-        </div>        {/* Audio Narration */}
+        </div>{" "}
+        {/* Audio Narration */}
         <div className="flex justify-between items-center">
           <h2 className="text-display text-xl font-semibold text-charcoal">
             {t("enableAudioNarration")}:
@@ -133,7 +143,8 @@ const Settings = () => {
               />
             </div>
           </label>
-        </div>        {/* High Contrast Mode */}
+        </div>{" "}
+        {/* High Contrast Mode */}
         <div className="flex justify-between items-center">
           <h2 className="text-display text-xl font-semibold text-charcoal">
             {t("highContrastMode")}:
@@ -159,7 +170,8 @@ const Settings = () => {
               />
             </div>
           </label>
-        </div>        {/* Language */}
+        </div>{" "}
+        {/* Language */}
         <div className="space-y-4">
           <h2 className="text-display text-xl font-semibold text-charcoal">
             {t("language")}:

@@ -106,7 +106,8 @@ const StoryView = () => {
             {story.description}
           </p>
         </div>
-      </div>      {/* Exit Button */}
+      </div>{" "}
+      {/* Exit Button */}
       <Link href="/tour/historical">
         <button className="absolute top-6 left-1/2 -translate-x-1/2 bg-black/50 text-white px-6 py-3 rounded-full hover:bg-black/70 transition-colors flex items-center gap-2">
           <X size={20} />

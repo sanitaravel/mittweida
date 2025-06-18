@@ -29,7 +29,9 @@ const Completion = () => {
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       {/* Main Content */}
-      <main className="flex-1 flex flex-col justify-center items-center px-6 py-12">        {/* Congratulations Section */}
+      <main className="flex-1 flex flex-col justify-center items-center px-6 py-12">
+        {" "}
+        {/* Congratulations Section */}
         <div className="text-center mb-12">
           <h1 className="text-display text-4xl md:text-5xl font-bold text-charcoal mb-6">
             {t("congratulations")}
@@ -45,7 +47,6 @@ const Completion = () => {
             </p>
           </div>
         </div>
-
         {/* Travel Journal Section */}
         <div className="w-full max-w-md mb-12">
           <h2 className="text-display text-2xl font-semibold text-charcoal text-center mb-6">
@@ -83,7 +84,8 @@ const Completion = () => {
               </span>
             </button>
           </div>
-        </div>        {/* Action Buttons */}
+        </div>{" "}
+        {/* Action Buttons */}
         <div className="w-full max-w-md space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <Link href="/tour/historical">

@@ -43,7 +43,8 @@ const RouteSelection = () => {
           <button className="bg-white p-3 rounded-xl shadow-lg hover:bg-beige transition-colors">
             <Filter size={24} className="text-charcoal" />
           </button>
-        </div>        {/* Placeholder map with route visualization */}
+        </div>{" "}
+        {/* Placeholder map with route visualization */}
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <div className="text-body text-lg text-charcoal/60 mb-4">
@@ -65,7 +66,8 @@ const RouteSelection = () => {
             </div>
           </div>
         </div>
-      </div>      {/* Route Details */}
+      </div>{" "}
+      {/* Route Details */}
       <div className="flex-1 p-6">
         <p className="text-body text-lg text-charcoal/80 mb-6">
           {t("tapOnRoute")}
@@ -86,7 +88,8 @@ const RouteSelection = () => {
                 {t(route.name as any)} ({route.duration})
               </h3>
               <p className="text-body text-charcoal/80 mb-3">
-                • {route.stops} {t("stops")}, {route.features.map(feature => t(feature as any)).join(", ")}
+                • {route.stops} {t("stops")},{" "}
+                {route.features.map((feature) => t(feature as any)).join(", ")}
               </p>
             </div>
           ))}
