@@ -1,9 +1,11 @@
 import { Link } from "wouter";
 import { Filter, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import RouteCardList from "../components/RouteCardList";
+import RouteFilter, { type RouteFilters } from "../components/RouteFilter";
 import { type Route } from "../components/RouteCard";
+import { filterRoutes, getAllUniqueFeatures } from "../utils/routeUtils";
 
 const routes: Route[] = [
   {
@@ -27,13 +29,40 @@ const routes: Route[] = [
 const RouteSelection = () => {
   const { t } = useTranslation();
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<RouteFilters>({
+    maxDuration: undefined,
+    maxStops: undefined,
+    minStops: undefined,
+    features: [],
+  });
+
+  const filteredRoutes = useMemo(() => {
+    return filterRoutes(routes, filters);
+  }, [filters]);
+
+  const availableFeatures = useMemo(() => {
+    return getAllUniqueFeatures(routes);
+  }, []);
+
+  const hasActiveFilters =
+    filters.maxDuration ||
+    filters.maxStops ||
+    filters.minStops ||
+    filters.features.length > 0;
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       {/* Map Area */}
       <div className="h-[60vh] bg-sandstone/20 relative">
+        {" "}
         <div className="absolute top-4 right-4">
-          <button className="bg-white p-3 rounded-xl shadow-lg hover:bg-beige transition-colors">
+          <button
+            onClick={() => setIsFilterOpen(true)}
+            className={`bg-white p-3 rounded-xl shadow-lg hover:bg-beige transition-colors ${
+              hasActiveFilters ? "ring-2 ring-sage" : ""
+            }`}
+          >
             <Filter size={24} className="text-charcoal" />
           </button>
         </div>{" "}
@@ -66,7 +95,7 @@ const RouteSelection = () => {
           {t("tapOnRoute")}
         </p>{" "}
         <RouteCardList
-          routes={routes}
+          routes={filteredRoutes}
           selectedRouteId={selectedRoute}
           onRouteSelect={setSelectedRoute}
           className="mb-8"
@@ -81,7 +110,6 @@ const RouteSelection = () => {
               </div>
             </button>
           </Link>
-
           <Link href="/tour/historical" className="flex-1">
             <button
               className={`btn-primary w-full ${
@@ -91,9 +119,17 @@ const RouteSelection = () => {
             >
               {t("continue")}
             </button>
-          </Link>
+          </Link>{" "}
         </div>
       </div>
+      {/* Route Filter Modal */}
+      <RouteFilter
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        filters={filters}
+        onFiltersChange={setFilters}
+        availableFeatures={availableFeatures}
+      />
     </div>
   );
 };

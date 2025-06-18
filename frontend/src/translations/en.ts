@@ -129,6 +129,18 @@ export const en = {
   edit: "Edit",
   delete: "Delete",
 
+  // Filters
+  filterRoutes: "Filter Routes",
+  maxDuration: "Maximum Duration",
+  numberOfStops: "Number of Stops",
+  minimum: "Minimum",
+  maximum: "Maximum",
+  any: "Any",
+  routeFeatures: "Route Features",
+  selectDesiredFeatures: "Select desired features",
+  clearAll: "Clear All",
+  applyFilters: "Apply Filters",
+
   // Accessibility
   closeNotification: "Close notification",
   toggleSettings: "Toggle settings",

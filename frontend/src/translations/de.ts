@@ -129,6 +129,18 @@ export const de = {
   edit: "Bearbeiten",
   delete: "Löschen",
 
+  // Filters
+  filterRoutes: "Routen filtern",
+  maxDuration: "Maximale Dauer",
+  numberOfStops: "Anzahl der Haltestellen",
+  minimum: "Minimum",
+  maximum: "Maximum",
+  any: "Beliebig",
+  routeFeatures: "Routenmerkmale",
+  selectDesiredFeatures: "Gewünschte Merkmale auswählen",
+  clearAll: "Alle löschen",
+  applyFilters: "Filter anwenden",
+
   // Accessibility
   closeNotification: "Benachrichtigung schließen",
   toggleSettings: "Einstellungen umschalten",
