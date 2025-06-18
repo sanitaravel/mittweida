@@ -14,6 +14,74 @@
   --color-charcoal: #213547;
 }
 
+/* Text Size Classes */
+:root.text-size-small {
+  --base-font-size: 0.875rem;
+  /* 14px */
+  --display-font-size: 1.25rem;
+  /* 20px */
+  --body-font-size: 0.875rem;
+  /* 14px */
+  --button-font-size: 1rem;
+  /* 16px */
+}
+
+:root.text-size-medium {
+  --base-font-size: 1rem;
+  /* 16px */
+  --display-font-size: 1.5rem;
+  /* 24px */
+  --body-font-size: 1rem;
+  /* 16px */
+  --button-font-size: 1.125rem;
+  /* 18px */
+}
+
+:root.text-size-large {
+  --base-font-size: 1.25rem;
+  /* 20px */
+  --display-font-size: 1.875rem;
+  /* 30px */
+  --body-font-size: 1.25rem;
+  /* 20px */
+  --button-font-size: 1.375rem;
+  /* 22px */
+}
+
+/* Text size utility classes for specific elements */
+.text-display {
+  font-size: var(--display-font-size, 1.5rem);
+  font-family: var(--font-serif);
+}
+
+.text-body {
+  font-size: var(--body-font-size, 1rem);
+  font-family: var(--font-sans);
+}
+
+/* High Contrast Mode */
+:root.high-contrast {
+  --color-sandstone: #8b7355;
+  --color-beige: #f0f0f0;
+  --color-cream: #ffffff;
+  --color-sage: #5a6b4d;
+  --color-dustyBlue: #4a6b7a;
+  --color-terracotta: #a5566b;
+  --color-charcoal: #000000;
+}
+
+:root.high-contrast .btn-primary {
+  border: 2px solid var(--color-charcoal);
+}
+
+:root.high-contrast .btn-secondary {
+  border-width: 3px;
+}
+
+:root.high-contrast .card {
+  border: 2px solid var(--color-charcoal);
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-cream);
@@ -21,6 +89,7 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  font-size: var(--base-font-size, 1rem);
 }
 
 h1,
@@ -37,7 +106,7 @@ h6 {
   color: white;
   padding: 0.875rem 2rem;
   border-radius: 0.625rem;
-  font-size: 1.125rem;
+  font-size: var(--button-font-size, 1.125rem);
   font-weight: 600;
   min-height: 3.25rem;
   min-width: 12.5rem;
@@ -70,7 +139,7 @@ h6 {
   color: var(--color-charcoal);
   padding: 0.875rem 2rem;
   border-radius: 0.625rem;
-  font-size: 1.125rem;
+  font-size: var(--button-font-size, 1.125rem);
   font-weight: 600;
   min-height: 3.25rem;
   min-width: 12.5rem;
@@ -103,4 +172,21 @@ h6 {
   padding: 1.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   border: 1px solid color-mix(in srgb, var(--color-sandstone) 20%, transparent);
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
 }

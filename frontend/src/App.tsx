@@ -1,4 +1,5 @@
 import { Router, Route } from "wouter";
+import { SettingsProvider } from "./contexts/SettingsContext";
 import Welcome from "./pages/Welcome";
 import RouteSelection from "./pages/RouteSelection";
 import CreateTour from "./pages/CreateTour";
@@ -9,17 +10,19 @@ import Completion from "./pages/Completion";
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-cream">
-        <Route path="/" component={Welcome} />
-        <Route path="/routes" component={RouteSelection} />
-        <Route path="/create" component={CreateTour} />
-        <Route path="/settings" component={Settings} />
-        <Route path="/tour/:routeId" component={GuidedTour} />
-        <Route path="/story/:stopId" component={StoryView} />
-        <Route path="/completion" component={Completion} />
-      </div>
-    </Router>
+    <SettingsProvider>
+      <Router>
+        <div className="min-h-screen bg-cream">
+          <Route path="/" component={Welcome} />
+          <Route path="/routes" component={RouteSelection} />
+          <Route path="/create" component={CreateTour} />
+          <Route path="/settings" component={Settings} />
+          <Route path="/tour/:routeId" component={GuidedTour} />
+          <Route path="/story/:stopId" component={StoryView} />
+          <Route path="/completion" component={Completion} />
+        </div>
+      </Router>
+    </SettingsProvider>
   );
 }
 
