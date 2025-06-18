@@ -1,11 +1,11 @@
 import { Link } from "wouter";
-import { Filter, ArrowLeft } from "lucide-react";
+import { Filter, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import RouteCardList from "../components/RouteCardList";
 import RouteFilter, { type RouteFilters } from "../components/RouteFilter";
 import { type Route } from "../components/RouteCard";
-import { filterRoutes, getAllUniqueFeatures } from "../utils/routeUtils";
+import { filterRoutes, getAllUniqueFeatures, assignColorsToRoutes, getColorClass } from "../utils/routeUtils";
 
 const routes: Route[] = [
   {
@@ -14,7 +14,7 @@ const routes: Route[] = [
     duration: "30 min",
     stops: 5,
     features: ["benchesAlongWay", "wheelchairAccessible"],
-    color: "green",
+    color: "", // Will be assigned automatically
   },
   {
     id: "church-park",
@@ -22,7 +22,71 @@ const routes: Route[] = [
     duration: "45 min",
     stops: 4,
     features: ["cafesNearby", "shadedPaths"],
-    color: "orange",
+    color: "", // Will be assigned automatically
+  },
+  {
+    id: "university-campus",
+    name: "universityCampusTour",
+    duration: "60 min",
+    stops: 8,
+    features: ["wheelchairAccessible", "cafesNearby", "indoorSections"],
+    color: "", // Will be assigned automatically
+  },
+  {
+    id: "city-center",
+    name: "cityCenterLoop",
+    duration: "40 min",
+    stops: 6,
+    features: ["cafesNearby", "shoppingNearby", "benchesAlongWay"],
+    color: "", // Will be assigned automatically
+  },
+  {
+    id: "nature-trail",
+    name: "natureTrail",
+    duration: "75 min",
+    stops: 7,
+    features: ["shadedPaths", "scenicViews", "benchesAlongWay"],
+    color: "", // Will be assigned automatically
+  },
+  {
+    id: "architectural-highlights",
+    name: "architecturalHighlights",
+    duration: "50 min",
+    stops: 6,
+    features: ["wheelchairAccessible", "photoOpportunities"],
+    color: "", // Will be assigned automatically
+  },
+  {
+    id: "family-friendly",
+    name: "familyFriendlyRoute",
+    duration: "35 min",
+    stops: 5,
+    features: ["wheelchairAccessible", "playgroundsNearby", "cafesNearby", "shadedPaths"],
+    color: "", // Will be assigned automatically
+  },
+  {
+    id: "quick-highlights",
+    name: "quickHighlights",
+    duration: "20 min",
+    stops: 3,
+    features: ["wheelchairAccessible", "photoOpportunities"],
+    color: "", // Will be assigned automatically
+  },
+  {
+    id: "evening-stroll",
+    name: "eveningStroll",
+    duration: "55 min",
+    stops: 6,
+    features: ["wellLit", "benchesAlongWay", "scenicViews"],
+    color: "", // Will be assigned automatically
+  },
+  {
+    id: "student-life",
+    name: "studentLifeTour",
+    duration: "65 min",
+    stops: 9,
+    features: ["cafesNearby", "shoppingNearby", "nightlifeNearby"],
+    color: "", // Will be assigned automatically
   },
 ];
 
@@ -30,6 +94,7 @@ const RouteSelection = () => {
   const { t } = useTranslation();
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
   const [filters, setFilters] = useState<RouteFilters>({
     maxDuration: undefined,
     maxStops: undefined,
@@ -37,9 +102,25 @@ const RouteSelection = () => {
     features: [],
   });
 
-  const filteredRoutes = useMemo(() => {
-    return filterRoutes(routes, filters);
+  const routesPerPage = 3;  const filteredRoutes = useMemo(() => {
+    const filtered = filterRoutes(routes, filters);
+    const startIndex = currentPage * routesPerPage;
+    const endIndex = startIndex + routesPerPage;
+    const paginatedRoutes = filtered.slice(startIndex, endIndex);
+    return assignColorsToRoutes(paginatedRoutes);
+  }, [filters, currentPage]);
+
+  const totalAvailableRoutes = useMemo(() => {
+    return filterRoutes(routes, filters).length;
   }, [filters]);
+
+  const totalPages = Math.ceil(totalAvailableRoutes / routesPerPage);
+
+  // Reset to first page when filters change
+  const handleFiltersChange = (newFilters: RouteFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(0);
+  };
 
   const availableFeatures = useMemo(() => {
     return getAllUniqueFeatures(routes);
@@ -65,8 +146,7 @@ const RouteSelection = () => {
           >
             <Filter size={24} className="text-charcoal" />
           </button>
-        </div>{" "}
-        {/* Placeholder map with route visualization */}
+        </div>{" "}        {/* Placeholder map with route visualization */}
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <div className="text-body text-lg text-charcoal/60 mb-4">
@@ -76,15 +156,13 @@ const RouteSelection = () => {
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                 <span>{t("yourLocation")}</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span>{t("historicalRoute")} (1-5)</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span>{t("churchRoute")} (A-D)</span>
-              </div>
+              </div>              {filteredRoutes.map((route) => {                return (
+                  <div key={route.id} className="flex items-center justify-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${getColorClass(route.color)}`}></div>
+                    <span className="text-xs">{t(route.name as any)}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -93,15 +171,56 @@ const RouteSelection = () => {
       <div className="flex-1 p-6">
         <p className="text-body text-lg text-charcoal/80 mb-6">
           {t("tapOnRoute")}
-        </p>{" "}
-        <RouteCardList
+        </p>{" "}        <RouteCardList
           routes={filteredRoutes}
           selectedRouteId={selectedRoute}
           onRouteSelect={setSelectedRoute}
-          className="mb-8"
-        />{" "}
+          className="mb-4"
+        />
+        
+        {/* Show indicator if there are more routes available */}
+        {totalAvailableRoutes > routesPerPage && (          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm text-charcoal/60">
+              {t("showingRoutes", { 
+                start: (currentPage * routesPerPage + 1).toString(),
+                end: Math.min((currentPage + 1) * routesPerPage, totalAvailableRoutes).toString(),
+                total: totalAvailableRoutes.toString()
+              })}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                disabled={currentPage === 0}
+                className="p-2 rounded-lg border border-charcoal/20 hover:bg-beige disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label={t("previousPage")}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-sm text-charcoal/80 px-2">
+                {currentPage + 1} / {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                disabled={currentPage === totalPages - 1}
+                className="p-2 rounded-lg border border-charcoal/20 hover:bg-beige disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label={t("nextPage")}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}{" "}
+        
+        {/* Show simple indicator if all routes fit on one page */}
+        {totalAvailableRoutes <= routesPerPage && totalAvailableRoutes > 0 && (
+          <div className="text-center mb-4">
+            <p className="text-sm text-charcoal/60">
+              {t("showingAllRoutes", { total: totalAvailableRoutes.toString() })}
+            </p>
+          </div>
+        )}{" "}
         {/* Action Buttons */}
-        <div className="flex gap-4">
+        <div className="flex gap-4 mt-8">
           <Link href="/" className="flex-1">
             <button className="btn-secondary w-full">
               <div className="flex items-center justify-center gap-2">
@@ -127,7 +246,7 @@ const RouteSelection = () => {
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={handleFiltersChange}
         availableFeatures={availableFeatures}
       />
     </div>

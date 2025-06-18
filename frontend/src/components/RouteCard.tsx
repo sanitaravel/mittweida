@@ -1,6 +1,7 @@
 import { useTranslation } from "../hooks/useTranslation";
 import { MapPin, Clock } from "lucide-react";
 import FeatureChip from "./FeatureChip";
+import { getColorClass, getColorValue } from "../utils/routeUtils";
 
 interface Route {
   id: string;
@@ -25,29 +26,7 @@ const RouteCard = ({
   onSelect,
   showColorIndicator = true,
   className = "",
-}: RouteCardProps) => {
-  const { t } = useTranslation();
-  const getColorClass = (color: string) => {
-    const colorMap: Record<string, string> = {
-      green: "bg-green-500",
-      orange: "bg-orange-500",
-      blue: "bg-blue-500",
-      red: "bg-red-500",
-      purple: "bg-purple-500",
-    };
-    return colorMap[color] || "bg-gray-500";
-  };
-
-  const getColorValue = (color: string) => {
-    const colorMap: Record<string, string> = {
-      green: "#22c55e",
-      orange: "#f97316",
-      blue: "#3b82f6",
-      red: "#ef4444",
-      purple: "#a855f7",
-    };
-    return colorMap[color] || "#6b7280";
-  };
+}: RouteCardProps) => {  const { t } = useTranslation();
   return (
     <div
       className={`card cursor-pointer transition-all duration-150 ease-out ${
