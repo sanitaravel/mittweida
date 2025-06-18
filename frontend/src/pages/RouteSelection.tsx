@@ -2,15 +2,8 @@ import { Link } from "wouter";
 import { Filter, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "../hooks/useTranslation";
-
-interface Route {
-  id: string;
-  name: string;
-  duration: string;
-  stops: number;
-  features: string[];
-  color: string;
-}
+import RouteCardList from "../components/RouteCardList";
+import { type Route } from "../components/RouteCard";
 
 const routes: Route[] = [
   {
@@ -71,28 +64,13 @@ const RouteSelection = () => {
       <div className="flex-1 p-6">
         <p className="text-body text-lg text-charcoal/80 mb-6">
           {t("tapOnRoute")}
-        </p>
-        <div className="space-y-4 mb-8">
-          {routes.map((route) => (
-            <div
-              key={route.id}
-              className={`card cursor-pointer transition-all duration-200 ${
-                selectedRoute === route.id
-                  ? "ring-2 ring-sage bg-sage/10"
-                  : "hover:bg-sandstone/10"
-              }`}
-              onClick={() => setSelectedRoute(route.id)}
-            >
-              <h3 className="text-display text-xl font-semibold text-charcoal mb-2">
-                {t(route.name as any)} ({route.duration})
-              </h3>
-              <p className="text-body text-charcoal/80 mb-3">
-                • {route.stops} {t("stops")},{" "}
-                {route.features.map((feature) => t(feature as any)).join(", ")}
-              </p>
-            </div>
-          ))}
-        </div>{" "}
+        </p>{" "}
+        <RouteCardList
+          routes={routes}
+          selectedRouteId={selectedRoute}
+          onRouteSelect={setSelectedRoute}
+          className="mb-8"
+        />{" "}
         {/* Action Buttons */}
         <div className="flex gap-4">
           <Link href="/" className="flex-1">
