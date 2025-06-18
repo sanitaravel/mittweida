@@ -1,5 +1,6 @@
 import { useTranslation } from "../hooks/useTranslation";
 import { MapPin, Clock } from "lucide-react";
+import FeatureChip from "./FeatureChip";
 
 interface Route {
   id: string;
@@ -96,10 +97,11 @@ const RouteCard = ({
         <div className="flex items-center gap-1 text-charcoal/60">
           <Clock size={16} />
           <span className="text-sm">{route.duration}</span>
-        </div>
-      </div>
-      <div className="text-body text-charcoal/80">
-        {route.features.map((feature) => t(feature as any)).join(", ")}
+        </div>      </div>
+      <div className="flex flex-wrap gap-2">
+        {route.features.map((feature) => (
+          <FeatureChip key={feature} feature={feature} />
+        ))}
       </div>
     </div>
   );
