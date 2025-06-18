@@ -82,6 +82,7 @@ export const en = {
   // Church location
   stAfraChurchDescription:
     "Built in the 14th century, St. Afra Church stands as one of Mittweida's most significant historical landmarks. The Gothic architecture features beautiful stained glass windows and intricate stone carvings.",
+
   // Story view
   storyView: "Story View",
   exitStory: "Exit Story",
@@ -93,12 +94,14 @@ export const en = {
   stainedGlassDescription:
     "The magnificent stained glass windows tell stories of saints and local legends.",
   stoneCarvingsDescription:
-    "Intricate stone carvings showcase the masterful craftsmanship of medieval artisans.",  // Route selection
-  routeSelection: "Route Selection",  tapOnRoute: "Tap on a route line to see details:",
+    "Intricate stone carvings showcase the masterful craftsmanship of medieval artisans.", // Route selection
+  routeSelection: "Route Selection",
+  tapOnRoute: "Tap on a route line to see details:",
   showingRoutes: "Showing {{start}}-{{end}} of {{total}} routes",
   showingAllRoutes: "Showing all {{total}} routes",
   previousPage: "Previous page",
   nextPage: "Next page",
+  swipeToNavigate: "Swipe left or right to see more routes",
   shortHistoricalWalk: "Short Historical Walk",
   churchParkStroll: "Church & Park Stroll",
   universityCampusTour: "University Campus Tour",
@@ -123,6 +126,7 @@ export const en = {
   stops: "stops",
   historicalRoute: "Historical Route",
   churchRoute: "Church Route",
+
   // Completion
   completion: "Completion",
   congratulations: "Congratulations!",

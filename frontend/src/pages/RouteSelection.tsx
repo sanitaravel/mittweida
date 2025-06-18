@@ -5,7 +5,12 @@ import { useTranslation } from "../hooks/useTranslation";
 import RouteCardList from "../components/RouteCardList";
 import RouteFilter, { type RouteFilters } from "../components/RouteFilter";
 import { type Route } from "../components/RouteCard";
-import { filterRoutes, getAllUniqueFeatures, assignColorsToRoutes, getColorClass } from "../utils/routeUtils";
+import {
+  filterRoutes,
+  getAllUniqueFeatures,
+  assignColorsToRoutes,
+  getColorClass,
+} from "../utils/routeUtils";
 
 const routes: Route[] = [
   {
@@ -61,7 +66,12 @@ const routes: Route[] = [
     name: "familyFriendlyRoute",
     duration: "35 min",
     stops: 5,
-    features: ["wheelchairAccessible", "playgroundsNearby", "cafesNearby", "shadedPaths"],
+    features: [
+      "wheelchairAccessible",
+      "playgroundsNearby",
+      "cafesNearby",
+      "shadedPaths",
+    ],
     color: "", // Will be assigned automatically
   },
   {
@@ -95,6 +105,8 @@ const RouteSelection = () => {
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [filters, setFilters] = useState<RouteFilters>({
     maxDuration: undefined,
     maxStops: undefined,
@@ -102,7 +114,9 @@ const RouteSelection = () => {
     features: [],
   });
 
-  const routesPerPage = 3;  const filteredRoutes = useMemo(() => {
+  const routesPerPage = 3;
+  const minSwipeDistance = 50;
+  const filteredRoutes = useMemo(() => {
     const filtered = filterRoutes(routes, filters);
     const startIndex = currentPage * routesPerPage;
     const endIndex = startIndex + routesPerPage;
@@ -115,11 +129,35 @@ const RouteSelection = () => {
   }, [filters]);
 
   const totalPages = Math.ceil(totalAvailableRoutes / routesPerPage);
-
   // Reset to first page when filters change
   const handleFiltersChange = (newFilters: RouteFilters) => {
     setFilters(newFilters);
     setCurrentPage(0);
+  };
+
+  // Touch/swipe handlers for mobile carousel
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1);
+    }
+    if (isRightSwipe && currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   const availableFeatures = useMemo(() => {
@@ -146,7 +184,8 @@ const RouteSelection = () => {
           >
             <Filter size={24} className="text-charcoal" />
           </button>
-        </div>{" "}        {/* Placeholder map with route visualization */}
+        </div>{" "}
+        {/* Placeholder map with route visualization */}
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <div className="text-body text-lg text-charcoal/60 mb-4">
@@ -156,9 +195,18 @@ const RouteSelection = () => {
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                 <span>{t("yourLocation")}</span>
-              </div>              {filteredRoutes.map((route) => {                return (
-                  <div key={route.id} className="flex items-center justify-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${getColorClass(route.color)}`}></div>
+              </div>{" "}
+              {filteredRoutes.map((route) => {
+                return (
+                  <div
+                    key={route.id}
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <div
+                      className={`w-3 h-3 rounded-full ${getColorClass(
+                        route.color
+                      )}`}
+                    ></div>
                     <span className="text-xs">{t(route.name as any)}</span>
                   </div>
                 );
@@ -171,20 +219,66 @@ const RouteSelection = () => {
       <div className="flex-1 p-6">
         <p className="text-body text-lg text-charcoal/80 mb-6">
           {t("tapOnRoute")}
-        </p>{" "}        <RouteCardList
-          routes={filteredRoutes}
-          selectedRouteId={selectedRoute}
-          onRouteSelect={setSelectedRoute}
-          className="mb-4"
-        />
-        
-        {/* Show indicator if there are more routes available */}
-        {totalAvailableRoutes > routesPerPage && (          <div className="flex items-center justify-between mb-4">
+        </p>{" "}
+        {/* Mobile Carousel Container */}
+        <div
+          className="md:hidden relative"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="transition-opacity duration-200 ease-out">
+            <RouteCardList
+              routes={filteredRoutes}
+              selectedRouteId={selectedRoute}
+              onRouteSelect={setSelectedRoute}
+              className="mb-4"
+            />
+          </div>
+
+          {/* Mobile pagination dots */}
+          {totalAvailableRoutes > routesPerPage && (
+            <div className="flex justify-center gap-2 mb-4">
+              {Array.from({ length: totalPages }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(index)}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentPage ? "bg-sage" : "bg-charcoal/20"
+                  }`}
+                  aria-label={`Go to page ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Mobile swipe hint */}
+          {totalAvailableRoutes > routesPerPage && (
+            <div className="text-center mb-4">
+              <p className="text-xs text-charcoal/50">{t("swipeToNavigate")}</p>
+            </div>
+          )}
+        </div>
+        {/* Desktop/Tablet List */}
+        <div className="hidden md:block">
+          <RouteCardList
+            routes={filteredRoutes}
+            selectedRouteId={selectedRoute}
+            onRouteSelect={setSelectedRoute}
+            className="mb-4"
+          />
+        </div>
+        {/* Desktop/Tablet Pagination Controls */}
+        {totalAvailableRoutes > routesPerPage && (
+          <div className="hidden md:flex items-center justify-between mb-4">
             <div className="text-sm text-charcoal/60">
-              {t("showingRoutes", { 
+              {t("showingRoutes", {
                 start: (currentPage * routesPerPage + 1).toString(),
-                end: Math.min((currentPage + 1) * routesPerPage, totalAvailableRoutes).toString(),
-                total: totalAvailableRoutes.toString()
+                end: Math.min(
+                  (currentPage + 1) * routesPerPage,
+                  totalAvailableRoutes
+                ).toString(),
+                total: totalAvailableRoutes.toString(),
               })}
             </div>
             <div className="flex items-center gap-2">
@@ -200,7 +294,9 @@ const RouteSelection = () => {
                 {currentPage + 1} / {totalPages}
               </span>
               <button
-                onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                onClick={() =>
+                  setCurrentPage(Math.min(totalPages - 1, currentPage + 1))
+                }
                 disabled={currentPage === totalPages - 1}
                 className="p-2 rounded-lg border border-charcoal/20 hover:bg-beige disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 aria-label={t("nextPage")}
@@ -210,12 +306,13 @@ const RouteSelection = () => {
             </div>
           </div>
         )}{" "}
-        
-        {/* Show simple indicator if all routes fit on one page */}
+        {/* Desktop/Tablet: Show simple indicator if all routes fit on one page */}
         {totalAvailableRoutes <= routesPerPage && totalAvailableRoutes > 0 && (
-          <div className="text-center mb-4">
+          <div className="hidden md:block text-center mb-4">
             <p className="text-sm text-charcoal/60">
-              {t("showingAllRoutes", { total: totalAvailableRoutes.toString() })}
+              {t("showingAllRoutes", {
+                total: totalAvailableRoutes.toString(),
+              })}
             </p>
           </div>
         )}{" "}

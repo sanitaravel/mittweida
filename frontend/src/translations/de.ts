@@ -93,12 +93,14 @@ export const de = {
   stainedGlassDescription:
     "Die prächtigen Glasfenster erzählen Geschichten von Heiligen und lokalen Legenden.",
   stoneCarvingsDescription:
-    "Kunstvolle Steinmetzarbeiten zeigen die meisterhafte Handwerkskunst mittelalterlicher Handwerker.",  // Route selection
-  routeSelection: "Routenauswahl",  tapOnRoute: "Tippen Sie auf eine Routenlinie, um Details zu sehen:",
+    "Kunstvolle Steinmetzarbeiten zeigen die meisterhafte Handwerkskunst mittelalterlicher Handwerker.", // Route selection
+  routeSelection: "Routenauswahl",
+  tapOnRoute: "Tippen Sie auf eine Routenlinie, um Details zu sehen:",
   showingRoutes: "Zeige {{start}}-{{end}} von {{total}} Routen",
   showingAllRoutes: "Zeige alle {{total}} Routen",
   previousPage: "Vorherige Seite",
   nextPage: "Nächste Seite",
+  swipeToNavigate: "Wischen Sie nach links oder rechts für weitere Routen",
   shortHistoricalWalk: "Kurzer historischer Spaziergang",
   churchParkStroll: "Kirchen- und Park-Spaziergang",
   universityCampusTour: "Universitätscampus-Tour",
@@ -123,6 +125,7 @@ export const de = {
   stops: "Stationen",
   historicalRoute: "Historische Route",
   churchRoute: "Kirchenroute",
+  
   // Completion
   completion: "Abschluss",
   congratulations: "Herzlichen Glückwunsch!",
