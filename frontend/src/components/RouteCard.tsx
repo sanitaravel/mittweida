@@ -89,15 +89,16 @@ const RouteCard = ({
       </div>{" "}
       <div className="flex items-center gap-4 mb-3">
         <div className="flex items-center gap-1 text-charcoal/80">
-          <MapPin size={16} />
-          <span className="text-body">
+          <Clock size={18} />
+          <span className="text-body font-medium">{route.duration}</span>
+        </div>
+        <div className="flex items-center gap-1 text-charcoal/50">
+          <MapPin size={14} />
+          <span className="text-sm">
             {route.stops} {t("stops")}
           </span>
-        </div>
-        <div className="flex items-center gap-1 text-charcoal/60">
-          <Clock size={16} />
-          <span className="text-sm">{route.duration}</span>
-        </div>      </div>
+        </div>{" "}
+      </div>
       <div className="flex flex-wrap gap-2">
         {route.features.map((feature) => (
           <FeatureChip key={feature} feature={feature} />
