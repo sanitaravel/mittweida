@@ -72,7 +72,6 @@ const RouteSelection = () => {
         <p className="text-body text-lg text-charcoal/80 mb-6">
           {t("tapOnRoute")}
         </p>
-
         <div className="space-y-4 mb-8">
           {routes.map((route) => (
             <div
@@ -93,27 +92,26 @@ const RouteSelection = () => {
               </p>
             </div>
           ))}
-        </div>
-
+        </div>{" "}
         {/* Action Buttons */}
-        <div className="space-y-4">
-          <Link href="/tour/historical">
+        <div className="flex gap-4">
+          <Link href="/" className="flex-1">
+            <button className="btn-secondary w-full">
+              <div className="flex items-center justify-center gap-2">
+                <ArrowLeft size={20} />
+                {t("back")}
+              </div>
+            </button>
+          </Link>
+
+          <Link href="/tour/historical" className="flex-1">
             <button
-              className={`btn-primary ${
+              className={`btn-primary w-full ${
                 !selectedRoute ? "opacity-50 cursor-not-allowed" : ""
               }`}
               disabled={!selectedRoute}
             >
               {t("continue")}
-            </button>
-          </Link>
-
-          <Link href="/">
-            <button className="btn-secondary">
-              <div className="flex items-center justify-center gap-2">
-                <ArrowLeft size={20} />
-                {t("back")}
-              </div>
             </button>
           </Link>
         </div>
