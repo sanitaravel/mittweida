@@ -3,13 +3,33 @@ import { MapPin, Clock } from "lucide-react";
 import FeatureChip from "./FeatureChip";
 import { getColorClass, getColorValue } from "../utils/routeUtils";
 
-interface Route {
+export interface Place {
+  id: string;
+  name: string;
+  description: string;
+  coordinates: [number, number]; // [latitude, longitude]
+  type:
+    | "attraction"
+    | "restaurant"
+    | "shop"
+    | "landmark"
+    | "park"
+    | "museum"
+    | "viewpoint";
+  estimatedVisitTime: number; // in minutes
+}
+
+export interface Route {
   id: string;
   name: string;
   duration: string;
   stops: number;
   features: string[];
   color: string;
+  places: Place[];
+  description: string;
+  startPoint: [number, number];
+  endPoint: [number, number];
 }
 
 interface RouteCardProps {
@@ -26,7 +46,8 @@ const RouteCard = ({
   onSelect,
   showColorIndicator = true,
   className = "",
-}: RouteCardProps) => {  const { t } = useTranslation();
+}: RouteCardProps) => {
+  const { t } = useTranslation();
   return (
     <div
       className={`card cursor-pointer transition-all duration-150 ease-out ${
@@ -88,4 +109,4 @@ const RouteCard = ({
 };
 
 export default RouteCard;
-export type { Route, RouteCardProps };
+export type { RouteCardProps };

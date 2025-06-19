@@ -8,6 +8,7 @@ import {
 import { Info, Plus, Minus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import L from "leaflet";
+import type { Route } from "./RouteCard";
 
 // Fix for default markers in React Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -22,12 +23,20 @@ L.Icon.Default.mergeOptions({
 
 interface MapProps {
   className?: string;
+  routes?: Route[];
+  selectedRouteId?: string | null;
+  onRouteSelect?: (routeId: string) => void;
 }
 
 // Mitweida coordinates
 const MITWEIDA_CENTER: [number, number] = [50.9842, 12.9784];
 
-const Map: React.FC<MapProps> = ({ className = "" }) => {
+const Map: React.FC<MapProps> = ({
+  className = "",
+  routes = [],
+  selectedRouteId, // For future use to highlight selected route
+  onRouteSelect,
+}) => {
   const [showAttribution, setShowAttribution] = useState(false);
   const mapRef = useRef<L.Map | null>(null);
 
@@ -76,32 +85,67 @@ const Map: React.FC<MapProps> = ({ className = "" }) => {
           onMapReady={(map) => {
             mapRef.current = map;
           }}
-        />
+        />{" "}
         <TileLayer
           attribution=""
           url="https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png"
           maxZoom={18}
           detectRetina={true}
         />
+        {/* City Center Marker */}
         <Marker position={MITWEIDA_CENTER}>
           <Popup>Mitweida City Center</Popup>
         </Marker>
+        {/* Route Start Point Markers */}
+        {routes.map((route) => (
+          <Marker
+            key={route.id}
+            position={route.startPoint}
+            eventHandlers={{
+              click: () => {
+                if (onRouteSelect) {
+                  onRouteSelect(route.id);
+                }
+              },
+            }}
+          >
+            <Popup>
+              <div className="text-center">
+                <h3 className="font-semibold text-charcoal">{route.name}</h3>
+                <p className="text-sm text-charcoal/70 mb-2">
+                  {route.duration} • {route.stops} stops
+                </p>
+                <p className="text-xs text-charcoal/60">{route.description}</p>
+                <button
+                  className="mt-2 px-3 py-1 bg-sage text-white text-xs rounded hover:bg-sage/90 transition-colors"
+                  onClick={() => {
+                    if (onRouteSelect) {
+                      onRouteSelect(route.id);
+                    }
+                  }}
+                >
+                  Select Route
+                </button>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>{" "}
       {/* Custom Zoom Controls */}
-      <div className="absolute top-4 right-20 z-[1000] flex gap-2">
-        <button
-          onClick={handleZoomOut}
-          className="bg-white hover:bg-beige active:bg-gray-100 active:scale-95 p-3 rounded-xl shadow-lg transition-all duration-150"
-          title="Zoom Out"
-        >
-          <Minus size={24} className="text-charcoal" />
-        </button>
+      <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
         <button
           onClick={handleZoomIn}
           className="bg-white hover:bg-beige active:bg-gray-100 active:scale-95 p-3 rounded-xl shadow-lg transition-all duration-150"
           title="Zoom In"
         >
           <Plus size={24} className="text-charcoal" />
+        </button>
+        <button
+          onClick={handleZoomOut}
+          className="bg-white hover:bg-beige active:bg-gray-100 active:scale-95 p-3 rounded-xl shadow-lg transition-all duration-150"
+          title="Zoom Out"
+        >
+          <Minus size={24} className="text-charcoal" />
         </button>
       </div>
       {/* Attribution Info Button */}
