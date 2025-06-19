@@ -6,9 +6,12 @@ import L from "leaflet";
 // Fix for default markers in React Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
 interface MapProps {
@@ -29,18 +32,14 @@ const Map: React.FC<MapProps> = ({ className = "" }) => {
         style={{ height: "100%", width: "100%" }}
         className="rounded-lg"
         attributionControl={false}
-      >
-        <TileLayer
+      >        <TileLayer
           attribution=""
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-          maxZoom={19}
+          url="https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png"
+          maxZoom={18}
           detectRetina={true}
-          subdomains="abcd"
         />
         <Marker position={MITWEIDA_CENTER}>
-          <Popup>
-            Mitweida City Center
-          </Popup>
+          <Popup>Mitweida City Center</Popup>
         </Marker>
       </MapContainer>
       
@@ -52,12 +51,20 @@ const Map: React.FC<MapProps> = ({ className = "" }) => {
       >
         <Info size={16} className="text-charcoal" />
       </button>
-        {/* Attribution Popup */}
+      
+      {/* Attribution Popup */}
       {showAttribution && (
         <div className="absolute bottom-12 right-2 bg-white p-3 rounded-lg shadow-lg text-xs text-charcoal max-w-xs z-[1000]">
-          <div className="mb-1">Map tiles by CartoDB</div>
-          <div className="mb-1">Powered by <a href="https://leafletjs.com/" className="text-blue-600 hover:underline">Leaflet</a></div>
-          <div>© <a href="https://www.openstreetmap.org/copyright" className="text-blue-600 hover:underline">OpenStreetMap</a> contributors</div>
+          <div className="mb-1">© Stadia Maps, © Stamen Design, © OpenStreetMap contributors</div>
+          <div className="mb-1">
+            Powered by{" "}
+            <a
+              href="https://leafletjs.com/"
+              className="text-blue-600 hover:underline"
+            >
+              Leaflet
+            </a>
+          </div>
           <button
             onClick={() => setShowAttribution(false)}
             className="mt-2 text-xs text-charcoal/60 hover:text-charcoal"
