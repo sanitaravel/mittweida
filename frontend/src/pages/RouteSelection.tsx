@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import RouteCardList from "../components/RouteCardList";
 import RouteFilter, { type RouteFilters } from "../components/RouteFilter";
+import Map from "../components/Map";
 import { type Route } from "../components/RouteCard";
 import {
   filterRoutes,
@@ -171,11 +172,9 @@ const RouteSelection = () => {
     filters.features.length > 0;
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      {/* Map Area */}
+    <div className="min-h-screen bg-cream flex flex-col">      {/* Map Area */}
       <div className="h-[60vh] bg-sandstone/20 relative">
-        {" "}
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 z-[1000]">
           <button
             onClick={() => setIsFilterOpen(true)}
             className={`bg-white p-3 rounded-xl shadow-lg hover:bg-beige transition-colors ${
@@ -184,37 +183,32 @@ const RouteSelection = () => {
           >
             <Filter size={24} className="text-charcoal" />
           </button>
-        </div>{" "}
-        {/* Placeholder map with route visualization */}
-        <div className="h-full flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-body text-lg text-charcoal/60 mb-4">
-              {t("interactiveMap")}
-            </div>
-            <div className="space-y-2 text-sm text-charcoal/80">
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span>{t("yourLocation")}</span>
-              </div>{" "}
-              {filteredRoutes.map((route) => {
-                return (
-                  <div
-                    key={route.id}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <div
-                      className={`w-3 h-3 rounded-full ${getColorClass(
-                        route.color
-                      )}`}
-                    ></div>
-                    <span className="text-xs">{t(route.name as any)}</span>
-                  </div>
-                );
-              })}
-            </div>
+        </div>
+        
+        {/* Leaflet Map */}
+        <Map className="h-full" />
+          {/* Route legend overlay */}
+        <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg shadow-lg max-w-xs">
+          <div className="text-sm font-medium text-charcoal mb-2">
+            Routes
+          </div>
+          <div className="space-y-1 text-xs text-charcoal/80">
+            {filteredRoutes.map((route) => (
+              <div
+                key={route.id}
+                className="flex items-center gap-2"
+              >
+                <div
+                  className={`w-3 h-3 rounded-full ${getColorClass(
+                    route.color
+                  )}`}
+                ></div>
+                <span>{t(route.name as any)}</span>
+              </div>
+            ))}
           </div>
         </div>
-      </div>{" "}
+      </div>
       {/* Route Details */}
       <div className="flex-1 p-6">
         <p className="text-body text-lg text-charcoal/80 mb-6">
