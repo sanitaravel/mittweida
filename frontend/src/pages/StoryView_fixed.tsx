@@ -1,4 +1,4 @@
-import { useParams, useLocation } from "wouter";
+import { useParams } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 
@@ -12,12 +12,13 @@ interface Story {
 const StoryView = () => {
   const { t } = useTranslation();
   const { stopId } = useParams<{ stopId: string }>();
-  const [, setLocation] = useLocation();
   const [currentStory, setCurrentStory] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);  const progressRef = useRef(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const progressRef = useRef(0);
   const isPausedRef = useRef(false);
+
   // Duration for each story in seconds (can be customized per story or audio length)
   const STORY_DURATION = 8; // 8 seconds per story
 
@@ -43,15 +44,9 @@ const StoryView = () => {
       title: t("stoneCarvings"),
       description: t("stoneCarvingsDescription"),
     },
-  ];  // Ensure currentStory is within valid bounds on mount
-  useEffect(() => {
-    if (
-      stories && stories.length > 0 &&
-      (currentStory < 0 || currentStory >= stories.length)
-    ) {
-      setCurrentStory(0);
-    }
-  }, [currentStory, stories]);// Auto-progression effect
+  ];
+
+  // Auto-progression effect
   useEffect(() => {
     // Immediately reset progress when story changes (before any intervals)
     progressRef.current = 0;
@@ -60,7 +55,7 @@ const StoryView = () => {
     const interval = setInterval(() => {
       // Check pause state inside interval to avoid resetting progress
       if (isPausedRef.current) return;
-
+      
       progressRef.current += 100 / (STORY_DURATION * 20); // Update every 50ms for smoother animation
 
       if (progressRef.current >= 100) {
@@ -69,21 +64,17 @@ const StoryView = () => {
           // Trigger transition animation for auto-progression
           setIsTransitioning(true);
           setTimeout(() => {
-            setCurrentStory(currentStory + 1);
+            setCurrentStory((prevStory) => prevStory + 1);
             isPausedRef.current = false;
             setIsPaused(false);
             setIsTransitioning(false);
-          }, 150);        } else {
-          // Last story completed, stop progression and return to guided tour
+          }, 150);
+        } else {
+          // Last story completed, stop progression
           isPausedRef.current = true;
           setIsPaused(true);
           progressRef.current = 100;
           setProgress(100);
-          
-          // Wait 2 seconds before returning to guided tour
-          setTimeout(() => {
-            setLocation(`/tour/${stopId || 'church'}`);
-          }, 2000);
         }
         return; // Exit early to prevent further updates
       }
@@ -93,10 +84,11 @@ const StoryView = () => {
 
     return () => clearInterval(interval);
   }, [currentStory, stories.length, STORY_DURATION]);
-  const nextStory = () => {
-    if (isTransitioning || !stories.length) return; // Prevent multiple transitions and ensure stories exist
-    setIsTransitioning(true);
 
+  const nextStory = () => {
+    if (isTransitioning) return; // Prevent multiple transitions
+    setIsTransitioning(true);
+    
     setTimeout(() => {
       setCurrentStory((prev) => (prev + 1) % stories.length);
       isPausedRef.current = false;
@@ -106,9 +98,9 @@ const StoryView = () => {
   };
 
   const prevStory = () => {
-    if (isTransitioning || !stories.length) return; // Prevent multiple transitions and ensure stories exist
+    if (isTransitioning) return; // Prevent multiple transitions
     setIsTransitioning(true);
-
+    
     setTimeout(() => {
       setCurrentStory((prev) => (prev - 1 + stories.length) % stories.length);
       isPausedRef.current = false;
@@ -137,25 +129,14 @@ const StoryView = () => {
   const handleMouseUp = () => {
     isPausedRef.current = false;
     setIsPaused(false);
-  }; // Prevent context menu on long press
+  };
+
+  // Prevent context menu on long press
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
   };
 
   const story = stories[currentStory];
-  // Safety check to prevent errors when story is undefined or stories array is empty
-  if (
-    !stories.length ||
-    !story ||
-    currentStory < 0 ||
-    currentStory >= stories.length
-  ) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-xl">Loading story...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-black text-white relative">
@@ -184,14 +165,14 @@ const StoryView = () => {
             src={story.image}
             alt={story.title}
             className={`w-full h-full object-cover transition-all duration-300 ease-in-out ${
-              isTransitioning ? "scale-105 opacity-80" : "scale-100 opacity-100"
+              isTransitioning ? 'scale-105 opacity-80' : 'scale-100 opacity-100'
             }`}
             key={currentStory} // Force re-render for animation
           />
 
           {/* Top shadow overlay */}
           <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
-
+          
           {/* Navigation Zones */}
           {/* Left zone for previous story */}
           {currentStory > 0 && (
@@ -200,7 +181,7 @@ const StoryView = () => {
               onClick={handlePrevClick}
             />
           )}
-
+          
           {/* Right zone for next story */}
           {currentStory < stories.length - 1 && (
             <div
@@ -234,13 +215,9 @@ const StoryView = () => {
         </div>
 
         {/* Text Content */}
-        <div
-          className={`bg-gradient-to-t from-black/95 via-black/70 to-transparent absolute bottom-0 left-0 right-0 p-6 h-40 transition-all duration-300 ease-in-out ${
-            isTransitioning
-              ? "opacity-60 translate-y-2"
-              : "opacity-100 translate-y-0"
-          }`}
-        >
+        <div className={`bg-gradient-to-t from-black/95 via-black/70 to-transparent absolute bottom-0 left-0 right-0 p-6 h-40 transition-all duration-300 ease-in-out ${
+          isTransitioning ? 'opacity-60 translate-y-2' : 'opacity-100 translate-y-0'
+        }`}>
           <h2 className="text-2xl font-bold mb-2 text-white">{story.title}</h2>
           <p className="text-lg text-white/90 leading-relaxed">
             {story.description}
