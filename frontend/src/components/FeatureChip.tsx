@@ -33,11 +33,13 @@ const FeatureChip = ({ feature, className = "" }: FeatureChipProps) => {
       },
     };
 
-    return featureMap[feature as keyof typeof featureMap] || {
-      icon: MapPin,
-      color: "bg-gray-100 text-gray-700 border-gray-200",
-      hoverColor: "hover:bg-gray-200",
-    };
+    return (
+      featureMap[feature as keyof typeof featureMap] || {
+        icon: MapPin,
+        color: "bg-gray-100 text-gray-700 border-gray-200",
+        hoverColor: "hover:bg-gray-200",
+      }
+    );
   };
 
   const config = getFeatureConfig(feature);

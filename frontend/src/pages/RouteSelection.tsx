@@ -18,6 +18,7 @@ import {
   getAllUniqueFeatures,
   assignColorsToRoutes,
   getColorClass,
+  formatDuration,
 } from "../utils/routeUtils";
 import { mittweidaRoutes } from "../data/routes";
 
@@ -104,9 +105,10 @@ const RouteSelection = () => {
           {/* Full-screen Map */}
           <Map
             className="h-full"
-            routes={routesWithColors}
+            routes={routesWithColors.filter((r) => r.id === selectedRoute)}
             selectedRouteId={selectedRoute}
             onRouteSelect={setSelectedRoute}
+            showRoutePaths={true}
           />
           {/* Route Card Overlay */}
           <div className="absolute bottom-6 left-4 right-4 z-[1000]">
@@ -125,9 +127,10 @@ const RouteSelection = () => {
                         {route.name}
                       </h2>
                       <div className="flex items-center gap-4 text-sm text-charcoal/70 mb-3">
+                        {" "}
                         <div className="flex items-center gap-1">
                           <Clock size={16} />
-                          <span>{route.duration}</span>
+                          <span>{formatDuration(route.duration)}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <MapPin size={16} />
@@ -192,6 +195,7 @@ const RouteSelection = () => {
               routes={filteredRoutes}
               selectedRouteId={selectedRoute}
               onRouteSelect={setSelectedRoute}
+              showRoutePaths={false}
             />
             {/* Route legend overlay */}
             <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg shadow-lg max-w-xs">

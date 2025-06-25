@@ -1,6 +1,22 @@
 import type { Route } from "../components/RouteCard";
 import type { RouteFilters } from "../components/RouteFilter";
 
+// Format duration in minutes to readable string (e.g., 150 -> "2h 30min")
+export const formatDuration = (minutes: number): string => {
+  if (minutes < 60) {
+    return `${minutes}min`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (remainingMinutes === 0) {
+    return `${hours}h`;
+  }
+
+  return `${hours}h ${remainingMinutes}min`;
+};
+
 // Color palette for route assignment
 const ROUTE_COLORS = ["green", "orange", "blue"] as const;
 
@@ -38,10 +54,7 @@ export const filterRoutes = (
   return routes.filter((route) => {
     // Duration filter
     if (filters.maxDuration) {
-      const routeDurationInMinutes = parseInt(
-        route.duration.replace(/\D/g, "")
-      );
-      if (routeDurationInMinutes > filters.maxDuration) {
+      if (route.duration > filters.maxDuration) {
         return false;
       }
     }

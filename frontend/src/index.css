@@ -1,6 +1,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* Import leaflet routing machine styles */
+@import url('https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css');
+
+/* Hide leaflet routing machine instructions panel */
+.leaflet-routing-container {
+  display: none !important;
+}
+
+.leaflet-control-container .leaflet-routing-container {
+  display: none !important;
+}
+
+.leaflet-bar .leaflet-routing-container {
+  display: none !important;
+}
+
+/* Numbered waypoint markers styles */
+.numbered-waypoint-marker {
+  background: transparent;
+  border: none;
+}
+
+.waypoint-number {
+  width: 30px;
+  height: 30px;
+  background-color: #213547;
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 @theme {
   --font-serif: 'Playfair Display', serif;
   --font-sans: 'Open Sans', sans-serif;

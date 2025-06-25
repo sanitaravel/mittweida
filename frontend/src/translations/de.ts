@@ -125,7 +125,7 @@ export const de = {
   stops: "Stationen",
   historicalRoute: "Historische Route",
   churchRoute: "Kirchenroute",
-  
+
   // Completion
   completion: "Abschluss",
   congratulations: "Herzlichen Glückwunsch!",

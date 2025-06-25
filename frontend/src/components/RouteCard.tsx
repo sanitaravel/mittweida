@@ -1,7 +1,11 @@
 import { useTranslation } from "../hooks/useTranslation";
 import { MapPin, Clock } from "lucide-react";
 import FeatureChip from "./FeatureChip";
-import { getColorClass, getColorValue } from "../utils/routeUtils";
+import {
+  getColorClass,
+  getColorValue,
+  formatDuration,
+} from "../utils/routeUtils";
 
 export interface Place {
   id: string;
@@ -22,14 +26,12 @@ export interface Place {
 export interface Route {
   id: string;
   name: string;
-  duration: string;
+  duration: number; // duration in minutes
   stops: number;
   features: string[];
   color: string;
   places: Place[];
   description: string;
-  startPoint: [number, number];
-  endPoint: [number, number];
 }
 
 interface RouteCardProps {
@@ -88,9 +90,12 @@ const RouteCard = ({
         </h3>
       </div>{" "}
       <div className="flex items-center gap-4 mb-3">
+        {" "}
         <div className="flex items-center gap-1 text-charcoal/80">
           <Clock size={18} />
-          <span className="text-body font-medium">{route.duration}</span>
+          <span className="text-body font-medium">
+            {formatDuration(route.duration)}
+          </span>
         </div>
         <div className="flex items-center gap-1 text-charcoal/50">
           <MapPin size={14} />

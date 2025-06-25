@@ -5,14 +5,12 @@ export const mittweidaRoutes: Route[] = [
   {
     id: "historic-center",
     name: "Historic City Center",
-    duration: "2h 30min",
+    duration: 150, // 2h 30min in minutes
     stops: 6,
     features: ["Historical", "Architecture", "Walking"],
     color: "blue",
     description:
       "Explore the charming historic center of Mitweida with its beautiful architecture and cultural landmarks.",
-    startPoint: [50.9842, 12.9784], // City center
-    endPoint: [50.9842, 12.9784],
     places: [
       {
         id: "city-hall",
@@ -68,14 +66,12 @@ export const mittweidaRoutes: Route[] = [
   {
     id: "nature-parks",
     name: "Parks & Nature",
-    duration: "3h 15min",
+    duration: 195, // 3h 15min in minutes
     stops: 5,
     features: ["Nature", "Parks", "Fresh Air", "Walking"],
     color: "green",
     description:
       "Discover the green spaces and natural beauty around Mitweida.",
-    startPoint: [50.986, 12.982],
-    endPoint: [50.982, 12.975],
     places: [
       {
         id: "city-park",
@@ -122,14 +118,12 @@ export const mittweidaRoutes: Route[] = [
   {
     id: "cultural-heritage",
     name: "Cultural Heritage",
-    duration: "2h 45min",
+    duration: 165, // 2h 45min in minutes
     stops: 4,
     features: ["Culture", "Museums", "Historical", "Arts"],
     color: "purple",
     description:
       "Immerse yourself in Mitweida's rich cultural heritage and arts scene.",
-    startPoint: [50.9835, 12.977],
-    endPoint: [50.985, 12.9795],
     places: [
       {
         id: "local-museum",
@@ -168,14 +162,12 @@ export const mittweidaRoutes: Route[] = [
   {
     id: "food-tour",
     name: "Local Food Experience",
-    duration: "3h 00min",
+    duration: 180, // 3h 00min in minutes
     stops: 5,
     features: ["Food", "Local Cuisine", "Traditional", "Social"],
     color: "orange",
     description:
       "Taste the flavors of Saxony with traditional dishes and local specialties.",
-    startPoint: [50.9845, 12.9775],
-    endPoint: [50.9832, 12.9788],
     places: [
       {
         id: "traditional-restaurant",
@@ -223,14 +215,12 @@ export const mittweidaRoutes: Route[] = [
   {
     id: "university-tech",
     name: "University & Technology",
-    duration: "2h 15min",
+    duration: 135, // 2h 15min in minutes
     stops: 4,
     features: ["Education", "Technology", "Modern", "Innovation"],
     color: "teal",
     description:
       "Explore Mitweida's reputation as a center for technology and higher education.",
-    startPoint: [50.9855, 12.98],
-    endPoint: [50.9862, 12.9815],
     places: [
       {
         id: "university-campus",
@@ -269,14 +259,12 @@ export const mittweidaRoutes: Route[] = [
   {
     id: "family-friendly",
     name: "Family Adventure",
-    duration: "4h 00min",
+    duration: 240, // 4h 00min in minutes
     stops: 6,
     features: ["Family", "Kids", "Interactive", "Fun", "Parks"],
     color: "yellow",
     description:
       "Perfect route for families with children, featuring parks, playgrounds, and interactive attractions.",
-    startPoint: [50.986, 12.982],
-    endPoint: [50.9825, 12.976],
     places: [
       {
         id: "adventure-playground",

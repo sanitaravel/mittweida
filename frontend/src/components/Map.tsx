@@ -9,6 +9,8 @@ import { Info, Plus, Minus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import L from "leaflet";
 import type { Route } from "./RouteCard";
+import RoutingMachine from "./RoutingMachine";
+import { formatDuration } from "../utils/routeUtils";
 
 // Fix for default markers in React Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -26,6 +28,7 @@ interface MapProps {
   routes?: Route[];
   selectedRouteId?: string | null;
   onRouteSelect?: (routeId: string) => void;
+  showRoutePaths?: boolean;
 }
 
 // Mitweida coordinates
@@ -36,6 +39,7 @@ const Map: React.FC<MapProps> = ({
   routes = [],
   selectedRouteId, // For future use to highlight selected route
   onRouteSelect,
+  showRoutePaths = false,
 }) => {
   const [showAttribution, setShowAttribution] = useState(false);
   const mapRef = useRef<L.Map | null>(null);
@@ -45,12 +49,12 @@ const Map: React.FC<MapProps> = ({
       mapRef.current.zoomIn();
     }
   };
-
   const handleZoomOut = () => {
     if (mapRef.current) {
       mapRef.current.zoomOut();
     }
   };
+
   // Custom hook to get map instance
   const MapController = ({
     onMapReady,
@@ -89,48 +93,78 @@ const Map: React.FC<MapProps> = ({
         <TileLayer
           attribution=""
           url="https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png"
-          maxZoom={18}
+          maxZoom={20}
           detectRetina={true}
         />
+        {/* Routing Machine Components */}
+        {showRoutePaths &&
+          routes.map((route) => {
+            if (route.places.length < 2) return null;
+
+            // Create waypoints for all places in the route
+            const waypoints = route.places.map((place) =>
+              L.latLng(place.coordinates[0], place.coordinates[1])
+            );
+
+            return (
+              <RoutingMachine
+                key={`route-${route.id}`}
+                waypoints={waypoints}
+                color={route.color}
+                routeWhileDragging={false}
+                addWaypoints={false}
+                show={false}
+              />
+            );
+          })}
         {/* City Center Marker */}
         <Marker position={MITWEIDA_CENTER}>
-          <Popup>Mitweida City Center</Popup>
+          <Popup>Mitweida City Center</Popup>{" "}
         </Marker>
         {/* Route Start Point Markers */}
-        {routes.map((route) => (
-          <Marker
-            key={route.id}
-            position={route.startPoint}
-            eventHandlers={{
-              click: () => {
-                if (onRouteSelect) {
-                  onRouteSelect(route.id);
-                }
-              },
-            }}
-          >
-            <Popup>
-              <div className="text-center">
-                <h3 className="font-semibold text-charcoal">{route.name}</h3>
-                <p className="text-sm text-charcoal/70 mb-2">
-                  {route.duration} • {route.stops} stops
-                </p>
-                <p className="text-xs text-charcoal/60">{route.description}</p>
-                <button
-                  className="mt-2 px-3 py-1 bg-sage text-white text-xs rounded hover:bg-sage/90 transition-colors"
-                  onClick={() => {
-                    if (onRouteSelect) {
-                      onRouteSelect(route.id);
-                    }
-                  }}
-                >
-                  Select Route
-                </button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>{" "}
+        {routes.map((route) => {
+          // Use first place as start point for marker
+          if (route.places.length === 0) return null;
+          const startPoint = route.places[0].coordinates;
+
+          return (
+            <Marker
+              key={route.id}
+              position={startPoint}
+              eventHandlers={{
+                click: () => {
+                  if (onRouteSelect) {
+                    onRouteSelect(route.id);
+                  }
+                },
+              }}
+            >
+              <Popup>
+                <div className="text-center">
+                  {" "}
+                  <h3 className="font-semibold text-charcoal">{route.name}</h3>
+                  <p className="text-sm text-charcoal/70 mb-2">
+                    {formatDuration(route.duration)} • {route.stops} stops
+                  </p>
+                  <p className="text-xs text-charcoal/60">
+                    {route.description}
+                  </p>
+                  <button
+                    className="mt-2 px-3 py-1 bg-sage text-white text-xs rounded hover:bg-sage/90 transition-colors"
+                    onClick={() => {
+                      if (onRouteSelect) {
+                        onRouteSelect(route.id);
+                      }
+                    }}
+                  >
+                    Select Route
+                  </button>
+                </div>
+              </Popup>{" "}
+            </Marker>
+          );
+        })}
+      </MapContainer>
       {/* Custom Zoom Controls */}
       <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
         <button
