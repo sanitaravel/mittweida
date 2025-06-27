@@ -1,9 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* Import leaflet routing machine styles */
-@import url('https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css');
-
 /* Hide leaflet routing machine instructions panel */
 .leaflet-routing-container {
   display: none !important;
@@ -38,7 +35,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-@theme {
+:root {
   --font-serif: 'Playfair Display', serif;
   --font-sans: 'Open Sans', sans-serif;
 
