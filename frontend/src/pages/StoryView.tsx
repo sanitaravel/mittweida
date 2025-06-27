@@ -1,6 +1,5 @@
-import { useParams, Link } from "wouter";
-import { ChevronLeft, ChevronRight, X, Volume2, VolumeX } from "lucide-react";
-import { useState } from "react";
+import { useParams, useLocation } from "wouter";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 
 interface Story {
@@ -13,107 +12,241 @@ interface Story {
 const StoryView = () => {
   const { t } = useTranslation();
   const { stopId } = useParams<{ stopId: string }>();
+  const [, setLocation] = useLocation();
   const [currentStory, setCurrentStory] = useState(0);
-  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);  const progressRef = useRef(0);
+  const isPausedRef = useRef(false);
+  // Duration for each story in seconds (can be customized per story or audio length)
+  const STORY_DURATION = 8; // 8 seconds per story
 
   const stories: Story[] = [
     {
       id: 1,
-      image: "/api/placeholder/400/600",
+      image:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Church_Mittweida1.JPG/800px-Church_Mittweida1.JPG",
       title: t("exteriorView"),
       description: t("exteriorDescription"),
     },
     {
       id: 2,
-      image: "/api/placeholder/400/600",
+      image:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Mittweida-Pfarrkirche2-Altar.jpg/800px-Mittweida-Pfarrkirche2-Altar.jpg",
       title: t("stainedGlass"),
       description: t("stainedGlassDescription"),
     },
     {
       id: 3,
-      image: "/api/placeholder/400/600",
+      image:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Stadtkirche_Mittweida%2C_Orgel_%281%29.jpg/800px-Stadtkirche_Mittweida%2C_Orgel_%281%29.jpg",
       title: t("stoneCarvings"),
       description: t("stoneCarvingsDescription"),
     },
-  ];
+  ];  // Ensure currentStory is within valid bounds on mount
+  useEffect(() => {
+    if (
+      stories && stories.length > 0 &&
+      (currentStory < 0 || currentStory >= stories.length)
+    ) {
+      setCurrentStory(0);
+    }
+  }, [currentStory, stories]);// Auto-progression effect
+  useEffect(() => {
+    // Immediately reset progress when story changes (before any intervals)
+    progressRef.current = 0;
+    setProgress(0);
 
+    const interval = setInterval(() => {
+      // Check pause state inside interval to avoid resetting progress
+      if (isPausedRef.current) return;
+
+      progressRef.current += 100 / (STORY_DURATION * 20); // Update every 50ms for smoother animation
+
+      if (progressRef.current >= 100) {
+        // Move to next story when progress is complete
+        if (currentStory < stories.length - 1) {
+          // Trigger transition animation for auto-progression
+          setIsTransitioning(true);
+          setTimeout(() => {
+            setCurrentStory(currentStory + 1);
+            isPausedRef.current = false;
+            setIsPaused(false);
+            setIsTransitioning(false);
+          }, 150);        } else {
+          // Last story completed, stop progression and return to guided tour
+          isPausedRef.current = true;
+          setIsPaused(true);
+          progressRef.current = 100;
+          setProgress(100);
+          
+          // Wait 2 seconds before returning to guided tour
+          setTimeout(() => {
+            setLocation(`/tour/${stopId || 'church'}`);
+          }, 2000);
+        }
+        return; // Exit early to prevent further updates
+      }
+
+      setProgress(progressRef.current);
+    }, 50); // Update every 50ms for smoother animation
+
+    return () => clearInterval(interval);
+  }, [currentStory, stories.length, STORY_DURATION]);
   const nextStory = () => {
-    setCurrentStory((prev) => (prev + 1) % stories.length);
+    if (isTransitioning || !stories.length) return; // Prevent multiple transitions and ensure stories exist
+    setIsTransitioning(true);
+
+    setTimeout(() => {
+      setCurrentStory((prev) => (prev + 1) % stories.length);
+      isPausedRef.current = false;
+      setIsPaused(false);
+      setIsTransitioning(false);
+    }, 150); // Half of transition duration
   };
 
   const prevStory = () => {
-    setCurrentStory((prev) => (prev - 1 + stories.length) % stories.length);
+    if (isTransitioning || !stories.length) return; // Prevent multiple transitions and ensure stories exist
+    setIsTransitioning(true);
+
+    setTimeout(() => {
+      setCurrentStory((prev) => (prev - 1 + stories.length) % stories.length);
+      isPausedRef.current = false;
+      setIsPaused(false);
+      setIsTransitioning(false);
+    }, 150); // Half of transition duration
+  };
+
+  // Handle navigation button clicks to prevent pause functionality
+  const handlePrevClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    prevStory();
+  };
+
+  const handleNextClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    nextStory();
+  };
+
+  // Toggle pause/play when pressing and holding the screen
+  const handleMouseDown = () => {
+    isPausedRef.current = true;
+    setIsPaused(true);
+  };
+
+  const handleMouseUp = () => {
+    isPausedRef.current = false;
+    setIsPaused(false);
+  }; // Prevent context menu on long press
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
   };
 
   const story = stories[currentStory];
+  // Safety check to prevent errors when story is undefined or stories array is empty
+  if (
+    !stories.length ||
+    !story ||
+    currentStory < 0 ||
+    currentStory >= stories.length
+  ) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-xl">Loading story...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white relative">
       {/* Story Content */}
       <div className="h-screen flex flex-col">
         {/* Image Area */}
-        <div className="flex-1 relative">
+        <div
+          className="flex-1 relative select-none"
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleMouseDown}
+          onTouchEnd={handleMouseUp}
+          onContextMenu={handleContextMenu}
+          style={
+            {
+              WebkitUserSelect: "none",
+              WebkitTouchCallout: "none",
+              WebkitTapHighlightColor: "transparent",
+              userSelect: "none",
+              touchAction: "manipulation",
+            } as React.CSSProperties
+          }
+        >
           <img
             src={story.image}
             alt={story.title}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover transition-all duration-300 ease-in-out ${
+              isTransitioning ? "scale-105 opacity-80" : "scale-100 opacity-100"
+            }`}
+            key={currentStory} // Force re-render for animation
           />
 
-          {/* Navigation Arrows */}
+          {/* Top shadow overlay */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
+
+          {/* Navigation Zones */}
+          {/* Left zone for previous story */}
           {currentStory > 0 && (
-            <button
-              onClick={prevStory}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition-colors"
-            >
-              <ChevronLeft size={24} />
-            </button>
+            <div
+              className="absolute left-0 top-0 bottom-0 w-1/3 z-10"
+              onClick={handlePrevClick}
+            />
           )}
 
+          {/* Right zone for next story */}
           {currentStory < stories.length - 1 && (
-            <button
-              onClick={nextStory}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition-colors"
-            >
-              <ChevronRight size={24} />
-            </button>
+            <div
+              className="absolute right-0 top-0 bottom-0 w-1/3 z-10"
+              onClick={handleNextClick}
+            />
           )}
-
-          {/* Audio Control */}
-          <button
-            onClick={() => setAudioEnabled(!audioEnabled)}
-            className="absolute bottom-4 right-4 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition-colors"
-          >
-            {audioEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
-          </button>
 
           {/* Story Progress */}
           <div className="absolute top-4 left-4 right-4 flex gap-1">
             {stories.map((_, index) => (
               <div
                 key={index}
-                className={`flex-1 h-1 rounded-full ${
-                  index === currentStory ? "bg-white" : "bg-white/30"
-                }`}
-              />
+                className="flex-1 h-1 rounded-full bg-white/30 overflow-hidden"
+              >
+                <div
+                  className="h-full bg-white transition-all duration-75 ease-linear"
+                  style={{
+                    width: `${
+                      index < currentStory
+                        ? 100
+                        : index === currentStory
+                        ? progress
+                        : 0
+                    }%`,
+                  }}
+                />
+              </div>
             ))}
           </div>
         </div>
 
         {/* Text Content */}
-        <div className="bg-gradient-to-t from-black/90 to-transparent absolute bottom-0 left-0 right-0 p-6">
+        <div
+          className={`bg-gradient-to-t from-black/95 via-black/70 to-transparent absolute bottom-0 left-0 right-0 p-6 h-40 transition-all duration-300 ease-in-out ${
+            isTransitioning
+              ? "opacity-60 translate-y-2"
+              : "opacity-100 translate-y-0"
+          }`}
+        >
           <h2 className="text-2xl font-bold mb-2 text-white">{story.title}</h2>
           <p className="text-lg text-white/90 leading-relaxed">
             {story.description}
           </p>
         </div>
-      </div>{" "}
-      {/* Exit Button */}
-      <Link href="/tour/historical">
-        <button className="absolute top-6 left-1/2 -translate-x-1/2 bg-black/50 text-white px-6 py-3 rounded-full hover:bg-black/70 transition-colors flex items-center gap-2">
-          <X size={20} />
-          {t("exitStory")}
-        </button>
-      </Link>
+      </div>
     </div>
   );
 };
