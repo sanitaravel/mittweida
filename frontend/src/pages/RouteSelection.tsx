@@ -197,24 +197,6 @@ const RouteSelection = () => {
               onRouteSelect={setSelectedRoute}
               showRoutePaths={false}
             />
-            {/* Route legend overlay */}
-            <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg shadow-lg max-w-xs">
-              <div className="text-sm font-medium text-charcoal mb-2">
-                Routes
-              </div>
-              <div className="space-y-1 text-xs text-charcoal/80">
-                {filteredRoutes.map((route) => (
-                  <div key={route.id} className="flex items-center gap-2">
-                    <div
-                      className={`w-3 h-3 rounded-full ${getColorClass(
-                        route.color
-                      )}`}
-                    ></div>
-                    <span>{t(route.name as any)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
           {/* Route Details */}
           <div className="flex-1 p-6">

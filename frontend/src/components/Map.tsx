@@ -37,7 +37,7 @@ const MITWEIDA_CENTER: [number, number] = [50.9842, 12.9784];
 const Map: React.FC<MapProps> = ({
   className = "",
   routes = [],
-  selectedRouteId, // For future use to highlight selected route
+  // selectedRouteId, // For future use to highlight selected route
   onRouteSelect,
   showRoutePaths = false,
 }) => {
@@ -57,9 +57,9 @@ const Map: React.FC<MapProps> = ({
 
   // Custom hook to get map instance
   const MapController = ({
-    onMapReady,
+    onMapInstanceReady,
   }: {
-    onMapReady: (map: L.Map) => void;
+    onMapInstanceReady: (map: L.Map) => void;
   }) => {
     const map = useMapEvents({
       zoomend: () => {
@@ -68,8 +68,8 @@ const Map: React.FC<MapProps> = ({
     });
 
     useEffect(() => {
-      onMapReady(map);
-    }, [map, onMapReady]);
+      onMapInstanceReady(map);
+    }, [map, onMapInstanceReady]);
 
     return null;
   };
@@ -86,7 +86,7 @@ const Map: React.FC<MapProps> = ({
         zoomControl={false}
       >
         <MapController
-          onMapReady={(map) => {
+          onMapInstanceReady={(map) => {
             mapRef.current = map;
           }}
         />{" "}
