@@ -10,6 +10,8 @@ interface RoutingMachineProps extends ControlOptions {
   routeWhileDragging?: boolean;
   addWaypoints?: boolean;
   show?: boolean;
+  showWaypoints?: boolean;
+  delay?: number; // Delay in milliseconds before making the request
 }
 
 const createRoutingMachineLayer = (props: RoutingMachineProps) => {
@@ -18,6 +20,8 @@ const createRoutingMachineLayer = (props: RoutingMachineProps) => {
     color = "blue",
     routeWhileDragging = false,
     addWaypoints = false,
+    showWaypoints = true,
+    delay = 0,
   } = props;
 
   const instance = (L as any).Routing.control({
@@ -25,6 +29,11 @@ const createRoutingMachineLayer = (props: RoutingMachineProps) => {
     routeWhileDragging,
     addWaypoints,
     createMarker: function (i: number, waypoint: any) {
+      // Only create markers if showWaypoints is true
+      if (!showWaypoints) {
+        return null;
+      }
+      
       // Create a custom numbered marker
       const marker = L.marker(waypoint.latLng, {
         icon: L.divIcon({
@@ -58,6 +67,16 @@ const createRoutingMachineLayer = (props: RoutingMachineProps) => {
       container.parentNode.removeChild(container);
     }
   });
+
+  // Add delay if specified to respect API rate limits
+  if (delay > 0) {
+    const originalRoute = instance.route;
+    instance.route = function(...args: any[]) {
+      setTimeout(() => {
+        originalRoute.apply(this, args);
+      }, delay);
+    };
+  }
 
   return instance;
 };

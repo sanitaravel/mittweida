@@ -29,6 +29,9 @@ interface MapProps {
   selectedRouteId?: string | null;
   onRouteSelect?: (routeId: string) => void;
   showRoutePaths?: boolean;
+  showWaypoints?: boolean;
+  markerRoutes?: Route[]; // Separate routes for markers (for pagination)
+  refreshKey?: string; // Key to force re-render when pagination/filters change
 }
 
 // Mitweida coordinates
@@ -40,9 +43,37 @@ const Map: React.FC<MapProps> = ({
   // selectedRouteId, // For future use to highlight selected route
   onRouteSelect,
   showRoutePaths = false,
+  showWaypoints = true,
+  markerRoutes, // If provided, use these routes for markers instead of main routes
+  refreshKey = "", // Key to force re-render
 }) => {
   const [showAttribution, setShowAttribution] = useState(false);
   const mapRef = useRef<L.Map | null>(null);
+
+  // Fit map bounds to show all routes when routes change
+  useEffect(() => {
+    if (mapRef.current && routes.length > 0 && showRoutePaths) {
+      const allCoordinates: [number, number][] = [];
+
+      // Collect all coordinates from all routes
+      routes.forEach((route) => {
+        route.places.forEach((place) => {
+          allCoordinates.push(place.coordinates);
+        });
+      });
+
+      if (allCoordinates.length > 0) {
+        // Create bounds from all coordinates
+        const bounds = L.latLngBounds(allCoordinates);
+
+        // Add some padding and fit the bounds
+        mapRef.current.fitBounds(bounds, {
+          padding: [20, 20],
+          maxZoom: 16, // Don't zoom in too much for single points
+        });
+      }
+    }
+  }, [routes, showRoutePaths]);
 
   const handleZoomIn = () => {
     if (mapRef.current) {
@@ -98,7 +129,7 @@ const Map: React.FC<MapProps> = ({
         />
         {/* Routing Machine Components */}
         {showRoutePaths &&
-          routes.map((route) => {
+          routes.map((route, index) => {
             if (route.places.length < 2) return null;
 
             // Create waypoints for all places in the route
@@ -108,12 +139,14 @@ const Map: React.FC<MapProps> = ({
 
             return (
               <RoutingMachine
-                key={`route-${route.id}`}
+                key={`route-${route.id}-${refreshKey}`}
                 waypoints={waypoints}
                 color={route.color}
                 routeWhileDragging={false}
                 addWaypoints={false}
                 show={false}
+                showWaypoints={showWaypoints}
+                delay={index * 200} // Stagger requests by 200ms to respect API limits
               />
             );
           })}
@@ -122,7 +155,7 @@ const Map: React.FC<MapProps> = ({
           <Popup>Mitweida City Center</Popup>{" "}
         </Marker>
         {/* Route Start Point Markers */}
-        {routes.map((route) => {
+        {(markerRoutes || routes).map((route) => {
           // Use first place as start point for marker
           if (route.places.length === 0) return null;
           const startPoint = route.places[0].coordinates;
@@ -195,6 +228,28 @@ const Map: React.FC<MapProps> = ({
         <div className="absolute bottom-12 right-2 bg-white p-3 rounded-lg shadow-lg text-xs text-charcoal max-w-xs z-[1000]">
           <div className="mb-1">
             © Stadia Maps, © Stamen Design, © OpenStreetMap contributors
+          </div>
+          <div className="mb-1">
+            Route data © OpenStreetMap contributors under{" "}
+            <a
+              href="http://opendatacommons.org/licenses/odbl/"
+              className="text-blue-600 hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ODbL
+            </a>
+          </div>
+          <div className="mb-1">
+            Routing by{" "}
+            <a
+              href="http://project-osrm.org/"
+              className="text-blue-600 hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              OSRM
+            </a>
           </div>
           <div className="mb-1">
             Powered by{" "}

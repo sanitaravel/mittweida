@@ -46,15 +46,24 @@ const RouteSelection = () => {
     return assignColorsToRoutes(routes);
   }, [routes]);
 
+  // All filtered routes (for map display)
+  const allFilteredRoutes = useMemo(() => {
+    return filterRoutes(routesWithColors, filters);
+  }, [routesWithColors, filters]);
+
+  // Paginated routes (for route list display)
   const filteredRoutes = useMemo(() => {
-    const filtered = filterRoutes(routesWithColors, filters);
     const startIndex = currentPage * routesPerPage;
     const endIndex = startIndex + routesPerPage;
-    return filtered.slice(startIndex, endIndex);
-  }, [routesWithColors, filters, currentPage]);
-  const totalAvailableRoutes = useMemo(() => {
-    return filterRoutes(routesWithColors, filters).length;
-  }, [routesWithColors, filters]);
+    return allFilteredRoutes.slice(startIndex, endIndex);
+  }, [allFilteredRoutes, currentPage]);
+
+  const totalAvailableRoutes = allFilteredRoutes.length;
+
+  // Generate refresh key to force route re-rendering when pagination or filters change
+  const refreshKey = useMemo(() => {
+    return `page-${currentPage}-filters-${JSON.stringify(filters)}`;
+  }, [currentPage, filters]);
 
   const totalPages = Math.ceil(totalAvailableRoutes / routesPerPage);
   // Reset to first page when filters change
@@ -109,6 +118,8 @@ const RouteSelection = () => {
             selectedRouteId={selectedRoute}
             onRouteSelect={setSelectedRoute}
             showRoutePaths={true}
+            showWaypoints={true}
+            refreshKey={refreshKey}
           />
           {/* Route Card Overlay */}
           <div className="absolute bottom-6 left-4 right-4 z-[1000]">
@@ -192,10 +203,13 @@ const RouteSelection = () => {
             {/* Leaflet Map */}
             <Map
               className="h-full"
-              routes={filteredRoutes}
+              routes={allFilteredRoutes}
+              markerRoutes={filteredRoutes}
               selectedRouteId={selectedRoute}
               onRouteSelect={setSelectedRoute}
-              showRoutePaths={false}
+              showRoutePaths={true}
+              showWaypoints={false}
+              refreshKey={refreshKey}
             />
           </div>
           {/* Route Details */}
