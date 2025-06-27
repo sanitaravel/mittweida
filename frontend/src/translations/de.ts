@@ -36,6 +36,18 @@ export const de = {
   highContrastDisabled: "Hoher Kontrast Modus deaktiviert",
   languageChanged: "Sprache geändert zu {{language}}",
   settingsSaved: "Einstellungen erfolgreich gespeichert",
+  
+  // Route Cache Management
+  routeCacheManagement: "Routen-Cache-Verwaltung",
+  preloadCache: "Cache vorladen",
+  preloadingCache: "Wird geladen...",
+  noCachedRoutes: "Keine gecacht Routen",
+  clearRoutes: "{{count}} Route löschen",
+  clearRoutesPlural: "{{count}} Routen löschen",
+  cacheCleared: "Routen-Cache geleert",
+  cachePreloaded: "Routen-Cache vorgeladen",
+  cachePreloadError: "Fehler beim Vorladen des Caches",
+
   // Welcome page
   welcome: "Willkommen",
   welcomeTitle: "Willkommen in Mittweida",

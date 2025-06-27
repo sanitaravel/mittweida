@@ -3,6 +3,7 @@ import { createControlComponent } from "@react-leaflet/core";
 import type { ControlOptions } from "leaflet";
 import "leaflet-routing-machine";
 import { getColorValue } from "../utils/routeUtils";
+import { routeCache } from "../utils/routeCache";
 
 interface RoutingMachineProps extends ControlOptions {
   waypoints: L.LatLng[];
@@ -13,6 +14,74 @@ interface RoutingMachineProps extends ControlOptions {
   showWaypoints?: boolean;
   delay?: number; // Delay in milliseconds before making the request
 }
+
+// Custom router with caching
+const createCachedRouter = () => {
+  return {
+    route: function(waypoints: any[], callback: any, context: any) {
+      // Check cache first
+      const cachedRoute = routeCache.get(waypoints);
+      if (cachedRoute) {
+        console.log('Using cached route for waypoints:', waypoints.length);
+        // Call the callback with cached data
+        setTimeout(() => {
+          if (callback) {
+            callback.call(context, null, [cachedRoute]);
+          }
+        }, 0);
+        return;
+      }
+
+      // If not in cache, make the API call using fetch
+      console.log('Fetching new route from API for waypoints:', waypoints.length);
+      
+      const coordinates = waypoints.map((wp: any) => `${wp.lng},${wp.lat}`).join(';');
+      const url = `https://router.project-osrm.org/route/v1/foot/${coordinates}?overview=full&geometries=geojson`;
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+            const route = data.routes[0];
+            
+            // Transform OSRM response to leaflet-routing-machine format
+            const transformedRoute = {
+              name: '',
+              coordinates: route.geometry.coordinates.map((coord: number[]) => 
+                L.latLng(coord[1], coord[0])
+              ),
+              instructions: [],
+              summary: {
+                totalDistance: route.distance,
+                totalTime: route.duration
+              },
+              inputWaypoints: waypoints,
+              actualWaypoints: waypoints,
+              waypoints: waypoints
+            };
+
+            // Cache the successful response
+            routeCache.set(waypoints, transformedRoute);
+
+            // Call the callback
+            if (callback) {
+              callback.call(context, null, [transformedRoute]);
+            }
+          } else {
+            if (callback) {
+              callback.call(context, new Error('No route found'), []);
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Route API error:', error);
+          if (callback) {
+            callback.call(context, error, []);
+          }
+        });
+    }
+  };
+};
 
 const createRoutingMachineLayer = (props: RoutingMachineProps) => {
   const {
@@ -45,10 +114,7 @@ const createRoutingMachineLayer = (props: RoutingMachineProps) => {
       });
       return marker;
     },
-    router: (L as any).Routing.osrmv1({
-      serviceUrl: "https://router.project-osrm.org/route/v1",
-      profile: "foot", // Use walking/pedestrian routing
-    }),
+    router: createCachedRouter(),
     lineOptions: {
       styles: [
         {
