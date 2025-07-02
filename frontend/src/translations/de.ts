@@ -36,6 +36,18 @@ export const de = {
   highContrastDisabled: "Hoher Kontrast Modus deaktiviert",
   languageChanged: "Sprache geändert zu {{language}}",
   settingsSaved: "Einstellungen erfolgreich gespeichert",
+  
+  // Route Cache Management
+  routeCacheManagement: "Routen-Cache-Verwaltung",
+  preloadCache: "Cache vorladen",
+  preloadingCache: "Wird geladen...",
+  noCachedRoutes: "Keine gecacht Routen",
+  clearRoutes: "{{count}} Route löschen",
+  clearRoutesPlural: "{{count}} Routen löschen",
+  cacheCleared: "Routen-Cache geleert",
+  cachePreloaded: "Routen-Cache vorgeladen",
+  cachePreloadError: "Fehler beim Vorladen des Caches",
+
   // Welcome page
   welcome: "Willkommen",
   welcomeTitle: "Willkommen in Mittweida",
@@ -93,19 +105,39 @@ export const de = {
   stainedGlassDescription:
     "Die prächtigen Glasfenster erzählen Geschichten von Heiligen und lokalen Legenden.",
   stoneCarvingsDescription:
-    "Kunstvolle Steinmetzarbeiten zeigen die meisterhafte Handwerkskunst mittelalterlicher Handwerker.",
-  // Route selection
+    "Kunstvolle Steinmetzarbeiten zeigen die meisterhafte Handwerkskunst mittelalterlicher Handwerker.", // Route selection
   routeSelection: "Routenauswahl",
   tapOnRoute: "Tippen Sie auf eine Routenlinie, um Details zu sehen:",
+  showingRoutes: "Zeige {{start}}-{{end}} von {{total}} Routen",
+  showingAllRoutes: "Zeige alle {{total}} Routen",
+  previousPage: "Vorherige Seite",
+  nextPage: "Nächste Seite",
+  swipeToNavigate: "Wischen Sie nach links oder rechts für weitere Routen",
   shortHistoricalWalk: "Kurzer historischer Spaziergang",
   churchParkStroll: "Kirchen- und Park-Spaziergang",
+  universityCampusTour: "Universitätscampus-Tour",
+  cityCenterLoop: "Stadtzentrum-Rundgang",
+  natureTrail: "Naturpfad",
+  architecturalHighlights: "Architektonische Highlights",
+  familyFriendlyRoute: "Familienfreundliche Route",
+  quickHighlights: "Schnelle Highlights",
+  eveningStroll: "Abendspaziergang",
+  studentLifeTour: "Studentenleben-Tour",
   benchesAlongWay: "Bänke entlang des Weges",
   wheelchairAccessible: "rollstuhlgerecht",
   cafesNearby: "Cafés in der Nähe",
   shadedPaths: "schattige Wege",
+  indoorSections: "Innenbereiche",
+  shoppingNearby: "Einkaufsmöglichkeiten in der Nähe",
+  scenicViews: "schöne Aussichten",
+  photoOpportunities: "Foto-Gelegenheiten",
+  playgroundsNearby: "Spielplätze in der Nähe",
+  wellLit: "gut beleuchtet",
+  nightlifeNearby: "Nachtleben in der Nähe",
   stops: "Stationen",
   historicalRoute: "Historische Route",
   churchRoute: "Kirchenroute",
+
   // Completion
   completion: "Abschluss",
   congratulations: "Herzlichen Glückwunsch!",
@@ -128,6 +160,18 @@ export const de = {
   save: "Speichern",
   edit: "Bearbeiten",
   delete: "Löschen",
+
+  // Filters
+  filterRoutes: "Routen filtern",
+  maxDuration: "Maximale Dauer",
+  numberOfStops: "Anzahl der Haltestellen",
+  minimum: "Minimum",
+  maximum: "Maximum",
+  any: "Beliebig",
+  routeFeatures: "Routenmerkmale",
+  selectDesiredFeatures: "Gewünschte Merkmale auswählen",
+  clearAll: "Alle löschen",
+  applyFilters: "Filter anwenden",
 
   // Accessibility
   closeNotification: "Benachrichtigung schließen",

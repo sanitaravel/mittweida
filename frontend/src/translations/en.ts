@@ -36,6 +36,18 @@ export const en = {
   highContrastDisabled: "High contrast mode disabled",
   languageChanged: "Language changed to {{language}}",
   settingsSaved: "Settings saved successfully",
+  
+  // Route Cache Management
+  routeCacheManagement: "Route Cache Management",
+  preloadCache: "Preload Cache",
+  preloadingCache: "Preloading...",
+  noCachedRoutes: "No Cached Routes",
+  clearRoutes: "Clear {{count}} Route",
+  clearRoutesPlural: "Clear {{count}} Routes",
+  cacheCleared: "Route cache cleared",
+  cachePreloaded: "Route cache preloaded",
+  cachePreloadError: "Failed to preload cache",
+
   // Welcome page
   welcome: "Welcome",
   welcomeTitle: "Welcome to Mittweida",
@@ -82,6 +94,7 @@ export const en = {
   // Church location
   stAfraChurchDescription:
     "Built in the 14th century, St. Afra Church stands as one of Mittweida's most significant historical landmarks. The Gothic architecture features beautiful stained glass windows and intricate stone carvings.",
+
   // Story view
   storyView: "Story View",
   exitStory: "Exit Story",
@@ -93,19 +106,39 @@ export const en = {
   stainedGlassDescription:
     "The magnificent stained glass windows tell stories of saints and local legends.",
   stoneCarvingsDescription:
-    "Intricate stone carvings showcase the masterful craftsmanship of medieval artisans.",
-  // Route selection
+    "Intricate stone carvings showcase the masterful craftsmanship of medieval artisans.", // Route selection
   routeSelection: "Route Selection",
   tapOnRoute: "Tap on a route line to see details:",
+  showingRoutes: "Showing {{start}}-{{end}} of {{total}} routes",
+  showingAllRoutes: "Showing all {{total}} routes",
+  previousPage: "Previous page",
+  nextPage: "Next page",
+  swipeToNavigate: "Swipe left or right to see more routes",
   shortHistoricalWalk: "Short Historical Walk",
   churchParkStroll: "Church & Park Stroll",
+  universityCampusTour: "University Campus Tour",
+  cityCenterLoop: "City Center Loop",
+  natureTrail: "Nature Trail",
+  architecturalHighlights: "Architectural Highlights",
+  familyFriendlyRoute: "Family-Friendly Route",
+  quickHighlights: "Quick Highlights",
+  eveningStroll: "Evening Stroll",
+  studentLifeTour: "Student Life Tour",
   benchesAlongWay: "benches along the way",
   wheelchairAccessible: "wheelchair accessible",
   cafesNearby: "cafés nearby",
   shadedPaths: "shaded paths",
+  indoorSections: "indoor sections",
+  shoppingNearby: "shopping nearby",
+  scenicViews: "scenic views",
+  photoOpportunities: "photo opportunities",
+  playgroundsNearby: "playgrounds nearby",
+  wellLit: "well lit",
+  nightlifeNearby: "nightlife nearby",
   stops: "stops",
   historicalRoute: "Historical Route",
   churchRoute: "Church Route",
+
   // Completion
   completion: "Completion",
   congratulations: "Congratulations!",
@@ -128,6 +161,18 @@ export const en = {
   save: "Save",
   edit: "Edit",
   delete: "Delete",
+
+  // Filters
+  filterRoutes: "Filter Routes",
+  maxDuration: "Maximum Duration",
+  numberOfStops: "Number of Stops",
+  minimum: "Minimum",
+  maximum: "Maximum",
+  any: "Any",
+  routeFeatures: "Route Features",
+  selectDesiredFeatures: "Select desired features",
+  clearAll: "Clear All",
+  applyFilters: "Apply Filters",
 
   // Accessibility
   closeNotification: "Close notification",

@@ -1,6 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* Hide leaflet routing machine instructions panel */
+.leaflet-routing-container {
+  display: none !important;
+}
+
+.leaflet-control-container .leaflet-routing-container {
+  display: none !important;
+}
+
+.leaflet-bar .leaflet-routing-container {
+  display: none !important;
+}
+
+/* Numbered waypoint markers styles */
+.numbered-waypoint-marker {
+  background: transparent;
+  border: none;
+}
+
+.waypoint-number {
+  width: 30px;
+  height: 30px;
+  background-color: #213547;
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 @theme {
   --font-serif: 'Playfair Display', serif;
   --font-sans: 'Open Sans', sans-serif;
@@ -109,8 +143,7 @@ h6 {
   font-size: var(--button-font-size, 1.125rem);
   font-weight: 600;
   min-height: 3.25rem;
-  min-width: 12.5rem;
-  max-width: 17.5rem;
+  min-width: 8rem;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -142,8 +175,7 @@ h6 {
   font-size: var(--button-font-size, 1.125rem);
   font-weight: 600;
   min-height: 3.25rem;
-  min-width: 12.5rem;
-  max-width: 17.5rem;
+  min-width: 8rem;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;

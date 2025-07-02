@@ -1,10 +1,16 @@
 import { Link } from "wouter";
-import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Database, Trash2, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useSettings } from "../contexts/SettingsContext";
 import type { TextSize, Language } from "../contexts/SettingsContext";
 import Notification from "../components/Notification";
 import { useTranslation } from "../hooks/useTranslation";
+import {
+  getCacheStats,
+  clearRouteCache,
+  preloadRouteCache,
+} from "../utils/routeUtils";
+import { mittweidaRoutes } from "../data/routes";
 
 const Settings = () => {
   const {
@@ -24,6 +30,19 @@ const Settings = () => {
     show: false,
     message: "",
   });
+
+  const [cacheStats, setCacheStats] = useState({ size: 0 });
+  const [isPreloading, setIsPreloading] = useState(false);
+
+  const updateCacheStats = () => {
+    const stats = getCacheStats();
+    setCacheStats(stats);
+  };
+
+  // Update cache stats when component mounts and when cache operations occur
+  useEffect(() => {
+    updateCacheStats();
+  }, []);
 
   const showNotification = (message: string) => {
     setNotification({ show: true, message });
@@ -57,6 +76,25 @@ const Settings = () => {
     );
   };
 
+  const handleCachePreload = async () => {
+    setIsPreloading(true);
+    try {
+      await preloadRouteCache(mittweidaRoutes);
+      updateCacheStats();
+      showNotification(t("cachePreloaded"));
+    } catch (error) {
+      showNotification(t("cachePreloadError"));
+    } finally {
+      setIsPreloading(false);
+    }
+  };
+
+  const handleCacheClear = () => {
+    clearRouteCache();
+    updateCacheStats();
+    showNotification(t("cacheCleared"));
+  };
+
   return (
     <div className="min-h-screen bg-cream">
       <Notification
@@ -71,21 +109,13 @@ const Settings = () => {
         </h1>
       </header>
       {/* Settings Content */}
-      <div className="p-6 space-y-8">
+      <div className="p-6 space-y-8 pb-32 overflow-y-auto max-h-[calc(100vh-120px)]">
         {" "}
         {/* Text Size */}
         <div className="space-y-4">
           <h2 className="text-display text-xl font-semibold text-charcoal">
             {t("textSize")}:
           </h2>
-
-          {/* Preview Text */}
-          <div className="card bg-white border border-sandstone/30">
-            <h3 className="text-display font-semibold text-charcoal mb-2">
-              {t("preview")}:
-            </h3>
-            <p className="text-body text-charcoal/80">{t("previewText")}</p>
-          </div>
 
           <div className="grid grid-cols-3 gap-3">
             {" "}
@@ -185,10 +215,42 @@ const Settings = () => {
             <option value="en">{t("english")}</option>
             <option value="de">{t("german")}</option>
           </select>
+        </div>{" "}
+        {/* Cache Management */}
+        <div className="space-y-4">
+          <h2 className="text-display text-xl font-semibold text-charcoal">
+            {t("routeCacheManagement")}:
+          </h2>
+          <div className="flex gap-4">
+            <button
+              onClick={handleCachePreload}
+              className="flex-1 p-4 rounded-xl bg-sage text-white font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              disabled={isPreloading}
+            >
+              {isPreloading ? (
+                <RefreshCw size={18} className="animate-spin" />
+              ) : (
+                <Database size={18} />
+              )}
+              {isPreloading ? t("preloadingCache") : t("preloadCache")}
+            </button>
+            <button
+              onClick={handleCacheClear}
+              className="flex-1 p-4 rounded-xl bg-terracotta text-white font-semibold transition-all flex items-center justify-center gap-2 hover:bg-terracotta/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-terracotta"
+              disabled={cacheStats.size === 0}
+            >
+              <Trash2 size={18} />
+              {cacheStats.size === 0
+                ? t("noCachedRoutes")
+                : cacheStats.size === 1
+                ? t("clearRoutes", { count: cacheStats.size.toString() })
+                : t("clearRoutesPlural", { count: cacheStats.size.toString() })}
+            </button>
+          </div>
         </div>
       </div>{" "}
       {/* Action Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-cream border-t border-sandstone/20">
+      <div className="fixed bottom-0 left-0 right-0 p-6 bg-cream border-t border-sandstone/20 z-10">
         <Link href="/">
           <button className="btn-primary">
             <div className="flex items-center justify-center gap-2">
