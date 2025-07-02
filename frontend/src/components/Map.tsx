@@ -10,7 +10,6 @@ import { useState, useRef, useEffect } from "react";
 import L from "leaflet";
 import type { Route } from "./RouteCard";
 import RoutingMachine from "./RoutingMachine";
-import { formatDuration } from "../utils/routeUtils";
 
 // Fix for default markers in React Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -137,7 +136,7 @@ const Map: React.FC<MapProps> = ({
               L.latLng(place.coordinates[0], place.coordinates[1])
             );
 
-            console.log('[Map] Creating RoutingMachine for route:', {
+            console.log("[Map] Creating RoutingMachine for route:", {
               routeId: route.id,
               routeName: route.name,
               placesCount: route.places.length,
@@ -145,13 +144,16 @@ const Map: React.FC<MapProps> = ({
               color: route.color,
               delay: index * 200,
               refreshKey,
-              places: route.places.map(p => ({ name: p.name, coordinates: p.coordinates })),
-              waypoints: waypoints.map(wp => ({ 
-                lat: wp.lat, 
+              places: route.places.map((p) => ({
+                name: p.name,
+                coordinates: p.coordinates,
+              })),
+              waypoints: waypoints.map((wp) => ({
+                lat: wp.lat,
                 lng: wp.lng,
                 isLatLng: wp instanceof L.LatLng,
-                type: typeof wp
-              }))
+                type: typeof wp,
+              })),
             });
 
             return (
@@ -190,28 +192,6 @@ const Map: React.FC<MapProps> = ({
                 },
               }}
             >
-              <Popup>
-                <div className="text-center">
-                  {" "}
-                  <h3 className="font-semibold text-charcoal">{route.name}</h3>
-                  <p className="text-sm text-charcoal/70 mb-2">
-                    {formatDuration(route.duration)} • {route.stops} stops
-                  </p>
-                  <p className="text-xs text-charcoal/60">
-                    {route.description}
-                  </p>
-                  <button
-                    className="mt-2 px-3 py-1 bg-sage text-white text-xs rounded hover:bg-sage/90 transition-colors"
-                    onClick={() => {
-                      if (onRouteSelect) {
-                        onRouteSelect(route.id);
-                      }
-                    }}
-                  >
-                    Select Route
-                  </button>
-                </div>
-              </Popup>{" "}
             </Marker>
           );
         })}

@@ -5,6 +5,8 @@ import {
   getColorClass,
   getColorValue,
   formatDuration,
+  calculateRouteDuration,
+  getRoutingTimeFromCache,
 } from "../utils/routeUtils";
 
 export interface Place {
@@ -26,7 +28,6 @@ export interface Place {
 export interface Route {
   id: string;
   name: string;
-  duration: number; // duration in minutes
   stops: number;
   features: string[];
   color: string;
@@ -50,6 +51,11 @@ const RouteCard = ({
   className = "",
 }: RouteCardProps) => {
   const { t } = useTranslation();
+
+  // Calculate total duration including routing time and visit times
+  const routingTime = getRoutingTimeFromCache(route.id);
+  const totalDuration = calculateRouteDuration(route, routingTime);
+
   return (
     <div
       className={`card cursor-pointer transition-all duration-150 ease-out ${
@@ -94,7 +100,7 @@ const RouteCard = ({
         <div className="flex items-center gap-1 text-charcoal/80">
           <Clock size={18} />
           <span className="text-body font-medium">
-            {formatDuration(route.duration)}
+            {formatDuration(totalDuration)}
           </span>
         </div>
         <div className="flex items-center gap-1 text-charcoal/50">

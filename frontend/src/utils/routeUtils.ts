@@ -56,7 +56,9 @@ export const filterRoutes = (
   return routes.filter((route) => {
     // Duration filter
     if (filters.maxDuration) {
-      if (route.duration > filters.maxDuration) {
+      const routingTime = getRoutingTimeFromCache(route.id);
+      const totalDuration = calculateRouteDuration(route, routingTime);
+      if (totalDuration > filters.maxDuration) {
         return false;
       }
     }
@@ -108,7 +110,7 @@ export const preloadRouteCache = async (routes: Route[]) => {
     const cached = routeCache.get(route.id);
     if (!cached) {
       console.log(`Cache miss for route ${route.id}, fetching from API...`);
-      
+
       const waypoints = route.places.map((place) =>
         L.latLng(place.coordinates[0], place.coordinates[1])
       );
@@ -132,15 +134,17 @@ export const preloadRouteCache = async (routes: Route[]) => {
           // Create a serializable version for caching (consistent with RoutingMachine)
           const cacheableRoute = {
             name: "",
-            coordinates: apiRoute.geometry.coordinates.map((coord: number[]) => ({
-              lat: coord[1],
-              lng: coord[0]
-            })),
+            coordinates: apiRoute.geometry.coordinates.map(
+              (coord: number[]) => ({
+                lat: coord[1],
+                lng: coord[0],
+              })
+            ),
             instructions: [],
             summary: {
               totalDistance: apiRoute.distance,
               totalTime: apiRoute.duration,
-            }
+            },
           };
 
           // Cache using route ID (consistent with RoutingMachine)
@@ -150,7 +154,10 @@ export const preloadRouteCache = async (routes: Route[]) => {
           console.warn(`No route found for ${route.name} (${route.id})`);
         }
       } catch (error) {
-        console.warn(`Failed to preload route for ${route.name} (${route.id}):`, error);
+        console.warn(
+          `Failed to preload route for ${route.name} (${route.id}):`,
+          error
+        );
       }
     } else {
       console.log(`Route ${route.id} already cached, skipping`);
@@ -160,22 +167,43 @@ export const preloadRouteCache = async (routes: Route[]) => {
   console.log("Route cache preloading completed");
 };
 
+// Calculate total route duration including travel time and visit times
+export const calculateRouteDuration = (
+  route: Route,
+  routingTimeMinutes?: number
+): number => {
+  // Sum all estimated visit times
+  const totalVisitTime = route.places.reduce(
+    (sum, place) => sum + place.estimatedVisitTime,
+    0
+  );
+
+  // Add routing time if available, otherwise return just visit time
+  const totalRoutingTime = routingTimeMinutes || 0;
+
+  return totalVisitTime + totalRoutingTime;
+};
+
+// Get routing time from cache if available
+export const getRoutingTimeFromCache = (routeId: string): number => {
+  const cached = routeCache.get(routeId);
+  if (cached && cached.summary?.totalTime) {
+    // Convert from seconds to minutes
+    return Math.round(cached.summary.totalTime / 60);
+  }
+  return 0;
+};
+
 // Debug utilities for development
 export const debugRouteCache = () => {
   const stats = getCacheStats();
   console.group("Route Cache Debug Info");
   console.log("Cache Stats:", stats);
   if (stats.oldestEntry) {
-    console.log(
-      "Oldest Entry:",
-      new Date(stats.oldestEntry).toLocaleString()
-    );
+    console.log("Oldest Entry:", new Date(stats.oldestEntry).toLocaleString());
   }
   if (stats.newestEntry) {
-    console.log(
-      "Newest Entry:",
-      new Date(stats.newestEntry).toLocaleString()
-    );
+    console.log("Newest Entry:", new Date(stats.newestEntry).toLocaleString());
   }
   console.groupEnd();
 };

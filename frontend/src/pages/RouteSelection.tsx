@@ -19,6 +19,8 @@ import {
   assignColorsToRoutes,
   getColorClass,
   formatDuration,
+  calculateRouteDuration,
+  getRoutingTimeFromCache,
 } from "../utils/routeUtils";
 import { mittweidaRoutes } from "../data/routes";
 
@@ -43,9 +45,9 @@ const RouteSelection = () => {
 
   // Assign colors to all routes once and keep them stable
   const routesWithColors = useMemo(() => {
-    console.log('[RouteSelection] Computing routes with colors:', {
+    console.log("[RouteSelection] Computing routes with colors:", {
       routeCount: routes.length,
-      routeIds: routes.map(r => r.id)
+      routeIds: routes.map((r) => r.id),
     });
     return assignColorsToRoutes(routes);
   }, [routes]);
@@ -53,11 +55,11 @@ const RouteSelection = () => {
   // All filtered routes (for map display)
   const allFilteredRoutes = useMemo(() => {
     const filtered = filterRoutes(routesWithColors, filters);
-    console.log('[RouteSelection] Filtering routes:', {
+    console.log("[RouteSelection] Filtering routes:", {
       totalRoutes: routesWithColors.length,
       filteredCount: filtered.length,
       filters: filters,
-      filteredRouteIds: filtered.map(r => r.id)
+      filteredRouteIds: filtered.map((r) => r.id),
     });
     return filtered;
   }, [routesWithColors, filters]);
@@ -152,7 +154,14 @@ const RouteSelection = () => {
                         {" "}
                         <div className="flex items-center gap-1">
                           <Clock size={16} />
-                          <span>{formatDuration(route.duration)}</span>
+                          <span>
+                            {formatDuration(
+                              calculateRouteDuration(
+                                route,
+                                getRoutingTimeFromCache(route.id)
+                              )
+                            )}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <MapPin size={16} />
