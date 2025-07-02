@@ -104,13 +104,15 @@ export const preloadRouteCache = async (routes: Route[]) => {
   for (const route of routes) {
     if (route.places.length < 2) continue;
 
-    const waypoints = route.places.map((place) =>
-      L.latLng(place.coordinates[0], place.coordinates[1])
-    );
-
-    // Check if already cached
-    const cached = routeCache.get(waypoints);
+    // Check if already cached using route ID
+    const cached = routeCache.get(route.id);
     if (!cached) {
+      console.log(`Cache miss for route ${route.id}, fetching from API...`);
+      
+      const waypoints = route.places.map((place) =>
+        L.latLng(place.coordinates[0], place.coordinates[1])
+      );
+
       // Simulate API call delay to respect rate limits
       await new Promise((resolve) => setTimeout(resolve, 300));
 
@@ -120,34 +122,38 @@ export const preloadRouteCache = async (routes: Route[]) => {
           .join(";");
         const url = `https://router.project-osrm.org/route/v1/foot/${coordinates}?overview=full&geometries=geojson`;
 
+        console.log(`Fetching route data for ${route.name} (${route.id})`);
         const response = await fetch(url);
         const data = await response.json();
 
         if (data.code === "Ok" && data.routes && data.routes.length > 0) {
           const apiRoute = data.routes[0];
 
-          // Transform OSRM response to leaflet-routing-machine format
-          const transformedRoute = {
+          // Create a serializable version for caching (consistent with RoutingMachine)
+          const cacheableRoute = {
             name: "",
-            coordinates: apiRoute.geometry.coordinates.map((coord: number[]) =>
-              L.latLng(coord[1], coord[0])
-            ),
+            coordinates: apiRoute.geometry.coordinates.map((coord: number[]) => ({
+              lat: coord[1],
+              lng: coord[0]
+            })),
             instructions: [],
             summary: {
               totalDistance: apiRoute.distance,
               totalTime: apiRoute.duration,
-            },
-            inputWaypoints: waypoints,
-            actualWaypoints: waypoints,
-            waypoints: waypoints,
+            }
           };
 
-          routeCache.set(waypoints, transformedRoute);
-          console.log(`Cached route for ${route.name}`);
+          // Cache using route ID (consistent with RoutingMachine)
+          routeCache.set(route.id, cacheableRoute);
+          console.log(`Successfully cached route: ${route.name} (${route.id})`);
+        } else {
+          console.warn(`No route found for ${route.name} (${route.id})`);
         }
       } catch (error) {
-        console.warn(`Failed to preload route for ${route.name}:`, error);
+        console.warn(`Failed to preload route for ${route.name} (${route.id}):`, error);
       }
+    } else {
+      console.log(`Route ${route.id} already cached, skipping`);
     }
   }
 

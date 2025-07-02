@@ -43,12 +43,23 @@ const RouteSelection = () => {
 
   // Assign colors to all routes once and keep them stable
   const routesWithColors = useMemo(() => {
+    console.log('[RouteSelection] Computing routes with colors:', {
+      routeCount: routes.length,
+      routeIds: routes.map(r => r.id)
+    });
     return assignColorsToRoutes(routes);
   }, [routes]);
 
   // All filtered routes (for map display)
   const allFilteredRoutes = useMemo(() => {
-    return filterRoutes(routesWithColors, filters);
+    const filtered = filterRoutes(routesWithColors, filters);
+    console.log('[RouteSelection] Filtering routes:', {
+      totalRoutes: routesWithColors.length,
+      filteredCount: filtered.length,
+      filters: filters,
+      filteredRouteIds: filtered.map(r => r.id)
+    });
+    return filtered;
   }, [routesWithColors, filters]);
 
   // Paginated routes (for route list display)

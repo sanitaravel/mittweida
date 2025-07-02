@@ -137,9 +137,27 @@ const Map: React.FC<MapProps> = ({
               L.latLng(place.coordinates[0], place.coordinates[1])
             );
 
+            console.log('[Map] Creating RoutingMachine for route:', {
+              routeId: route.id,
+              routeName: route.name,
+              placesCount: route.places.length,
+              waypointCount: waypoints.length,
+              color: route.color,
+              delay: index * 200,
+              refreshKey,
+              places: route.places.map(p => ({ name: p.name, coordinates: p.coordinates })),
+              waypoints: waypoints.map(wp => ({ 
+                lat: wp.lat, 
+                lng: wp.lng,
+                isLatLng: wp instanceof L.LatLng,
+                type: typeof wp
+              }))
+            });
+
             return (
               <RoutingMachine
                 key={`route-${route.id}-${refreshKey}`}
+                routeId={route.id}
                 waypoints={waypoints}
                 color={route.color}
                 routeWhileDragging={false}
