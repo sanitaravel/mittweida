@@ -69,6 +69,10 @@ export const en = {
   selected: "selected",
   previewRoute: "Preview Route",
   startTour: "Start Tour",
+  
+  // Navigation
+  accuracy: "Accuracy",
+  nearby: "Nearby",
 
   // Attractions
   stAfraChurch: "St. Afra Church",

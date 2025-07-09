@@ -86,6 +86,10 @@ export const de = {
   selected: "ausgewählt",
   previewRoute: "Route vorschauen",
   startTour: "Tour starten",
+  
+  // Navigation
+  accuracy: "Genauigkeit",
+  nearby: "In der Nähe",
 
   // Attractions
   stAfraChurch: "St. Afra Kirche",
