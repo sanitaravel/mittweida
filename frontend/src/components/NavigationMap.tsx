@@ -1,14 +1,18 @@
-import { useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { routeCache } from '../utils/routeCache';
+import { useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { Info, Plus, Minus } from "lucide-react";
+import { routeCache } from "../utils/routeCache";
 
 // Fix for default markers in Leaflet with Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
 interface Place {
@@ -33,9 +37,26 @@ interface NavigationMapProps {
   className?: string;
 }
 
-const NavigationMap = ({ route, userLocation, className = '' }: NavigationMapProps) => {
+const NavigationMap = ({
+  route,
+  userLocation,
+  className = "",
+}: NavigationMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const [showAttribution, setShowAttribution] = useState(false);
+
+  const handleZoomIn = () => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.zoomIn();
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.zoomOut();
+    }
+  };
 
   // Initialize map
   useEffect(() => {
@@ -44,14 +65,19 @@ const NavigationMap = ({ route, userLocation, className = '' }: NavigationMapPro
     const map = L.map(mapRef.current, {
       center: route.places[0]?.coordinates || [50.9867, 12.9792],
       zoom: 15,
-      zoomControl: true,
-      attributionControl: true,
+      zoomControl: false,
+      attributionControl: false,
     });
 
     // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    L.tileLayer(
+      "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png",
+      {
+        attribution: "",
+        maxZoom: 20,
+        detectRetina: true,
+      }
+    ).addTo(map);
 
     mapInstanceRef.current = map;
 
@@ -82,35 +108,44 @@ const NavigationMap = ({ route, userLocation, className = '' }: NavigationMapPro
     let polyline: L.Polyline;
 
     if (cachedRouteData && cachedRouteData.coordinates) {
-      console.log('[NavigationMap] Using cached route data:', {
+      console.log("[NavigationMap] Using cached route data:", {
         routeId: route.id,
         coordinateCount: cachedRouteData.coordinates.length,
         totalDistance: cachedRouteData.summary?.totalDistance,
-        totalTime: cachedRouteData.summary?.totalTime
+        totalTime: cachedRouteData.summary?.totalTime,
       });
 
       // Use the actual route coordinates from the cached data
-      routeCoordinates = cachedRouteData.coordinates.map((coord: any) => [coord.lat, coord.lng]);
-      
+      routeCoordinates = cachedRouteData.coordinates.map((coord: any) => [
+        coord.lat,
+        coord.lng,
+      ]);
+
       // Create a detailed polyline from the actual route
       polyline = L.polyline(routeCoordinates, {
-        color: route.color || '#3B82F6',
+        color: route.color || "#3B82F6",
         weight: 4,
         opacity: 0.8,
-        smoothFactor: 1
+        smoothFactor: 1,
       }).addTo(map);
 
-      console.log('[NavigationMap] Drew actual route path with', routeCoordinates.length, 'coordinates');
+      console.log(
+        "[NavigationMap] Drew actual route path with",
+        routeCoordinates.length,
+        "coordinates"
+      );
     } else {
-      console.log('[NavigationMap] No cached route data found, falling back to direct connections');
-      
+      console.log(
+        "[NavigationMap] No cached route data found, falling back to direct connections"
+      );
+
       // Fall back to simple polyline between places
-      routeCoordinates = route.places.map(place => place.coordinates);
+      routeCoordinates = route.places.map((place) => place.coordinates);
       polyline = L.polyline(routeCoordinates, {
-        color: route.color || '#3B82F6',
+        color: route.color || "#3B82F6",
         weight: 4,
         opacity: 0.8,
-        dashArray: '10, 10' // Dashed line to indicate this is not the actual route
+        dashArray: "10, 10", // Dashed line to indicate this is not the actual route
       }).addTo(map);
     }
 
@@ -118,42 +153,80 @@ const NavigationMap = ({ route, userLocation, className = '' }: NavigationMapPro
     route.places.forEach((place, index) => {
       const isStart = index === 0;
       const isEnd = index === route.places.length - 1;
-      
+
       // Create custom icons for start and end points
       let markerIcon;
       if (isStart) {
         markerIcon = L.divIcon({
-          html: `<div style="background: #10B981; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${index + 1}</div>`,
+          html: `<div style="background: #10B981; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${
+            index + 1
+          }</div>`,
           iconSize: [30, 30],
           iconAnchor: [15, 15],
-          className: 'custom-marker'
+          className: "custom-marker",
         });
       } else if (isEnd) {
         markerIcon = L.divIcon({
-          html: `<div style="background: #EF4444; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${index + 1}</div>`,
+          html: `<div style="background: #EF4444; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${
+            index + 1
+          }</div>`,
           iconSize: [30, 30],
           iconAnchor: [15, 15],
-          className: 'custom-marker'
+          className: "custom-marker",
         });
       } else {
         markerIcon = L.divIcon({
-          html: `<div style="background: #3B82F6; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${index + 1}</div>`,
+          html: `<div style="background: #3B82F6; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${
+            index + 1
+          }</div>`,
           iconSize: [25, 25],
           iconAnchor: [12.5, 12.5],
-          className: 'custom-marker'
+          className: "custom-marker",
         });
       }
 
-      L.marker(place.coordinates, { icon: markerIcon })
-        .addTo(map)
-        .bindPopup(`
+      L.marker(place.coordinates, { icon: markerIcon }).addTo(map).bindPopup(`
           <div style="max-width: 200px;">
             <h3><strong>${place.name}</strong></h3>
             <p style="margin: 8px 0;">${place.description}</p>
-            <p style="margin: 4px 0;"><em>Stop ${index + 1} ${isStart ? '(Start)' : isEnd ? '(End)' : ''}</em></p>
-            <p style="margin: 4px 0; font-size: 0.9em; color: #666;">Estimated visit: ${place.estimatedVisitTime} minutes</p>
+            <p style="margin: 4px 0;"><em>Stop ${index + 1} ${
+        isStart ? "(Start)" : isEnd ? "(End)" : ""
+      }</em></p>
+            <p style="margin: 4px 0; font-size: 0.9em; color: #666;">Estimated visit: ${
+              place.estimatedVisitTime
+            } minutes</p>
           </div>
         `);
+
+      // Add dashed line from attraction to nearest point on route path (only if we have cached route data)
+      if (cachedRouteData && cachedRouteData.coordinates && routeCoordinates.length > 1) {
+        // Find the closest point on the actual route path to this attraction
+        let closestPoint = routeCoordinates[0];
+        let minDistance = Infinity;
+
+        routeCoordinates.forEach((coord) => {
+          const distance = Math.sqrt(
+            Math.pow(coord[0] - place.coordinates[0], 2) + 
+            Math.pow(coord[1] - place.coordinates[1], 2)
+          );
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestPoint = coord;
+          }
+        });
+
+        // Only draw the dashed line if the attraction is not already on the route path
+        // (i.e., if the closest point is more than a small threshold away)
+        const threshold = 0.0001; // Small distance threshold
+        if (minDistance > threshold) {
+          L.polyline([place.coordinates, closestPoint], {
+            color: '#64748B',
+            weight: 3,
+            opacity: 0.8,
+            dashArray: '8, 6',
+          }).addTo(map);
+        }
+      }
     });
 
     // Add user location marker if available
@@ -170,12 +243,12 @@ const NavigationMap = ({ route, userLocation, className = '' }: NavigationMapPro
                </style>`,
         iconSize: [20, 20],
         iconAnchor: [10, 10],
-        className: 'user-location-marker'
+        className: "user-location-marker",
       });
 
       L.marker(userLocation, { icon: userIcon })
         .addTo(map)
-        .bindPopup('<div><strong>Your Location</strong></div>');
+        .bindPopup("<div><strong>Your Location</strong></div>");
     }
 
     // Fit map to show route with proper padding
@@ -195,7 +268,84 @@ const NavigationMap = ({ route, userLocation, className = '' }: NavigationMapPro
     }
   }, [route, userLocation]);
 
-  return <div ref={mapRef} className={`w-full h-full ${className}`} />;
+  return (
+    <div className={`h-full w-full relative ${className}`}>
+      <div ref={mapRef} className="w-full h-full rounded-lg" />
+
+      {/* Custom Zoom Controls */}
+      <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
+        <button
+          onClick={handleZoomIn}
+          className="bg-white hover:bg-beige active:bg-gray-100 active:scale-95 p-3 rounded-xl shadow-lg transition-all duration-150"
+          title="Zoom In"
+        >
+          <Plus size={24} className="text-charcoal" />
+        </button>
+        <button
+          onClick={handleZoomOut}
+          className="bg-white hover:bg-beige active:bg-gray-100 active:scale-95 p-3 rounded-xl shadow-lg transition-all duration-150"
+          title="Zoom Out"
+        >
+          <Minus size={24} className="text-charcoal" />
+        </button>
+      </div>
+
+      {/* Attribution Info Button */}
+      <button
+        onClick={() => setShowAttribution(!showAttribution)}
+        className="absolute bottom-2 right-2 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-colors z-[1000]"
+        title="Map Information"
+      >
+        <Info size={16} className="text-charcoal" />
+      </button>
+
+      {/* Attribution Popup */}
+      {showAttribution && (
+        <div className="absolute bottom-12 right-2 bg-white p-3 rounded-lg shadow-lg text-xs text-charcoal max-w-xs z-[1000]">
+          <div className="mb-1">
+            © Stadia Maps, © Stamen Design, © OpenStreetMap contributors
+          </div>
+          <div className="mb-1">
+            Route data © OpenStreetMap contributors under{" "}
+            <a
+              href="http://opendatacommons.org/licenses/odbl/"
+              className="text-blue-600 hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ODbL
+            </a>
+          </div>
+          <div className="mb-1">
+            Routing by{" "}
+            <a
+              href="http://project-osrm.org/"
+              className="text-blue-600 hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              OSRM
+            </a>
+          </div>
+          <div className="mb-1">
+            Powered by{" "}
+            <a
+              href="https://leafletjs.com/"
+              className="text-blue-600 hover:underline"
+            >
+              Leaflet
+            </a>
+          </div>
+          <button
+            onClick={() => setShowAttribution(false)}
+            className="mt-2 text-xs text-charcoal/60 hover:text-charcoal"
+          >
+            Close
+          </button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default NavigationMap;
