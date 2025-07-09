@@ -8,6 +8,23 @@ export const de = {
   start: "Start",
   continue: "Weiter",
 
+  navigation: "Navigation",
+  locationFound: "Standort gefunden",
+  findingLocation: "Standort wird gesucht...",
+  locationError: "Standortfehler",
+  locationPermissionDenied: "Standortzugriff verweigert. Bitte aktivieren Sie die Standortdienste.",
+  locationUnavailable: "Standortinformationen sind nicht verfügbar.",
+  locationTimeout: "Standortanfrage ist abgelaufen.",
+  orientationMode: "Orientierungsmodus",
+  lookNorth: "Nach Norden schauen",
+  followDirection: "Richtung folgen",
+  waypointNearby: "Wegpunkt in der Nähe!",
+  closeToPointOfInterest: "Sie sind in der Nähe einer Sehenswürdigkeit",
+  viewStory: "Geschichte ansehen",
+  audioGuide: "Audio-Guide",
+  metersAway: "{{distance}}m entfernt",
+  headingDirection: "Richtung {{direction}}",
+
   // Settings
   settings: "Einstellungen",
   textSize: "Textgröße",

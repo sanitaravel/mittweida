@@ -180,6 +180,24 @@ export const en = {
   selectLanguage: "Select language",
   toggleAudioNarration: "Toggle audio narration",
   toggleHighContrast: "Toggle high contrast mode",
+
+  // Navigation
+  navigation: "Navigation",
+  locationFound: "Location Found",
+  findingLocation: "Finding Location...",
+  locationError: "Location Error",
+  locationPermissionDenied: "Location access denied. Please enable location services.",
+  locationUnavailable: "Location information is unavailable.",
+  locationTimeout: "Location request timed out.",
+  orientationMode: "Orientation Mode",
+  lookNorth: "Look North",
+  followDirection: "Follow Direction",
+  waypointNearby: "Waypoint Nearby!",
+  closeToPointOfInterest: "You're close to a point of interest",
+  viewStory: "View Story",
+  audioGuide: "Audio Guide",
+  metersAway: "{{distance}}m away",
+  headingDirection: "heading {{direction}}",
 };
 
 export type TranslationKey = keyof typeof en;

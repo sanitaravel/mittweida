@@ -196,9 +196,11 @@ const RouteSelection = () => {
                     >
                       Back
                     </button>
-                    <button className="flex-1 px-4 py-3 bg-sage text-white rounded-lg hover:bg-sage/90 transition-colors">
-                      Continue
-                    </button>
+                    <Link href={`/tour/${selectedRoute}`} className="flex-1">
+                      <button className="w-full px-4 py-3 bg-sage text-white rounded-lg hover:bg-sage/90 transition-colors">
+                        Continue
+                      </button>
+                    </Link>
                   </div>
                 </div>
               );
@@ -346,7 +348,7 @@ const RouteSelection = () => {
                   </div>
                 </button>
               </Link>
-              <Link href="/tour/historical" className="flex-1">
+              <Link href={selectedRoute ? `/tour/${selectedRoute}` : "#"} className="flex-1">
                 <button
                   className={`btn-primary w-full ${
                     !selectedRoute ? "opacity-50 cursor-not-allowed" : ""
