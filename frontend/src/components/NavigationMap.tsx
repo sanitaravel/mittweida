@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Info, Plus, Minus } from "lucide-react";
+import { Info, Plus, Minus, Navigation } from "lucide-react";
 import { routeCache } from "../utils/routeCache";
 import { getColorValue } from "../utils/routeUtils";
 
@@ -46,6 +46,7 @@ const NavigationMap = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const [showAttribution, setShowAttribution] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) {
@@ -56,6 +57,12 @@ const NavigationMap = ({
   const handleZoomOut = () => {
     if (mapInstanceRef.current) {
       mapInstanceRef.current.zoomOut();
+    }
+  };
+
+  const handleCenterOnLocation = () => {
+    if (mapInstanceRef.current && userLocation) {
+      mapInstanceRef.current.setView(userLocation);
     }
   };
 
@@ -79,6 +86,11 @@ const NavigationMap = ({
         detectRetina: true,
       }
     ).addTo(map);
+
+    // Add event listeners to detect user interaction
+    map.on('drag', () => setHasUserInteracted(true));
+    map.on('zoom', () => setHasUserInteracted(true));
+    map.on('click', () => setHasUserInteracted(true));
 
     mapInstanceRef.current = map;
 
@@ -226,7 +238,7 @@ const NavigationMap = ({
 
     // Add user location marker if available
     if (userLocation) {
-      const userIcon = L.divIcon({
+      const userIcon = L.divIcon({  
         html: `<div style="background: var(--color-warmGray); border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative;">
                  <div style="position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border: 2px solid var(--color-warmGray); border-radius: 50%; animation: pulse 2s infinite;"></div>
                </div>
@@ -246,8 +258,8 @@ const NavigationMap = ({
         .bindPopup("<div><strong>Your Location</strong></div>");
     }
 
-    // Fit map to show route with proper padding
-    if (routeCoordinates.length > 0) {
+    // Fit map to show route with proper padding (only on initial load)
+    if (routeCoordinates.length > 0 && !hasUserInteracted) {
       if (userLocation) {
         // Include user location in bounds calculation
         const allCoordinates = [...routeCoordinates, userLocation];
@@ -261,7 +273,7 @@ const NavigationMap = ({
     // Add route info popup if cached data is available
     if (cachedRouteData && cachedRouteData.summary) {
     }
-  }, [route, userLocation]);
+  }, [route, userLocation, hasUserInteracted]);
 
   return (
     <div className={`h-full w-full relative ${className}`}>
@@ -284,6 +296,17 @@ const NavigationMap = ({
           <Minus size={24} className="text-charcoal" />
         </button>
       </div>
+
+      {/* Center on Location Button */}
+      {userLocation && (
+        <button
+          onClick={handleCenterOnLocation}
+          className="absolute top-4 right-4 z-[1000] bg-white hover:bg-beige active:bg-gray-100 active:scale-95 p-3 rounded-xl shadow-lg transition-all duration-150"
+          title="Center on My Location"
+        >
+          <Navigation size={24} className="text-charcoal" />
+        </button>
+      )}
 
       {/* Attribution Info Button */}
       <button
