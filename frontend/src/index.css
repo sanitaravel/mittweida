@@ -35,10 +35,19 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+.waypoint-number.start-marker {
+  background-color: var(--color-sage);
+}
+
+.waypoint-number.end-marker {
+  background-color: var(--color-terracotta);
+}
+
 @theme {
   --font-serif: 'Playfair Display', serif;
   --font-sans: 'Open Sans', sans-serif;
 
+  /* Primary Brand Colors */
   --color-sandstone: #c2b280;
   --color-beige: #f5f0e1;
   --color-cream: #fffdf6;
@@ -46,6 +55,24 @@
   --color-dustyBlue: #7a9eab;
   --color-terracotta: #d88c9a;
   --color-charcoal: #213547;
+
+  /* Extended Color Palette */
+  --color-warmGray: #8b8680;
+  --color-lightSage: #b8c9a8;
+  --color-darkSage: #7a9371;
+  --color-paleBeige: #f8f4eb;
+  --color-richSandstone: #b3a26f;
+  --color-softBlue: #a4b7c4;
+  --color-deepBlue: #5a7a87;
+  --color-roseDust: #e4a0ad;
+  --color-clay: #c97a6b;
+  --color-moss: #6b7c5d;
+  --color-stone: #a8a29e;
+  --color-ivory: #faf8f5;
+  --color-slate: #374151;
+  --color-amber: #d4b068;
+  --color-lavender: #b5a4c7;
+  --color-mist: #e8e3dc;
 }
 
 /* Text Size Classes */

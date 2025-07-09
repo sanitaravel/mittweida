@@ -3,6 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Info, Plus, Minus } from "lucide-react";
 import { routeCache } from "../utils/routeCache";
+import { getColorValue } from "../utils/routeUtils";
 
 // Fix for default markers in Leaflet with Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -123,7 +124,7 @@ const NavigationMap = ({
 
       // Create a detailed polyline from the actual route
       polyline = L.polyline(routeCoordinates, {
-        color: route.color || "#3B82F6",
+        color: getColorValue("blue"),
         weight: 4,
         opacity: 0.8,
         smoothFactor: 1,
@@ -142,7 +143,7 @@ const NavigationMap = ({
       // Fall back to simple polyline between places
       routeCoordinates = route.places.map((place) => place.coordinates);
       polyline = L.polyline(routeCoordinates, {
-        color: route.color || "#3B82F6",
+        color: getColorValue("blue"),
         weight: 4,
         opacity: 0.8,
         dashArray: "10, 10", // Dashed line to indicate this is not the actual route
@@ -158,30 +159,24 @@ const NavigationMap = ({
       let markerIcon;
       if (isStart) {
         markerIcon = L.divIcon({
-          html: `<div style="background: #10B981; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${
-            index + 1
-          }</div>`,
+          className: "numbered-waypoint-marker",
+          html: `<div class="waypoint-number start-marker">${index + 1}</div>`,
           iconSize: [30, 30],
           iconAnchor: [15, 15],
-          className: "custom-marker",
         });
       } else if (isEnd) {
         markerIcon = L.divIcon({
-          html: `<div style="background: #EF4444; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${
-            index + 1
-          }</div>`,
+          className: "numbered-waypoint-marker",
+          html: `<div class="waypoint-number end-marker">${index + 1}</div>`,
           iconSize: [30, 30],
           iconAnchor: [15, 15],
-          className: "custom-marker",
         });
       } else {
         markerIcon = L.divIcon({
-          html: `<div style="background: #3B82F6; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${
-            index + 1
-          }</div>`,
-          iconSize: [25, 25],
-          iconAnchor: [12.5, 12.5],
-          className: "custom-marker",
+          className: "numbered-waypoint-marker",
+          html: `<div class="waypoint-number">${index + 1}</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
         });
       }
 
@@ -222,7 +217,7 @@ const NavigationMap = ({
           L.polyline([place.coordinates, closestPoint], {
             color: '#64748B',
             weight: 3,
-            opacity: 0.8,
+            opacity: 0.6,
             dashArray: '8, 6',
           }).addTo(map);
         }
@@ -232,8 +227,8 @@ const NavigationMap = ({
     // Add user location marker if available
     if (userLocation) {
       const userIcon = L.divIcon({
-        html: `<div style="background: #8B5CF6; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative;">
-                 <div style="position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border: 2px solid #8B5CF6; border-radius: 50%; animation: pulse 2s infinite;"></div>
+        html: `<div style="background: var(--color-warmGray); border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative;">
+                 <div style="position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border: 2px solid var(--color-warmGray); border-radius: 50%; animation: pulse 2s infinite;"></div>
                </div>
                <style>
                  @keyframes pulse {
