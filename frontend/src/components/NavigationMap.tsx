@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Info, Plus, Minus, Navigation } from "lucide-react";
-import { routeCache } from "../utils/routeCache";
 import { getColorValue } from "../utils/routeUtils";
 
 // Fix for default markers in Leaflet with Vite
@@ -45,8 +44,268 @@ const NavigationMap = ({
 }: NavigationMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const routeLayersRef = useRef<L.Polyline[]>([]);
+  const markersRef = useRef<L.Marker[]>([]);
+  const userLocationMarkerRef = useRef<L.Marker | null>(null);
   const [showAttribution, setShowAttribution] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [routeData, setRouteData] = useState<{
+    coordinates: [number, number][];
+    distance: number;
+    duration: number;
+  } | null>(null);
+  const [isLoadingRoute, setIsLoadingRoute] = useState(false);
+  const [showDeviationWarning, setShowDeviationWarning] = useState(false);
+  const [lastRouteUpdateLocation, setLastRouteUpdateLocation] = useState<[number, number] | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Distance threshold for route deviation (in meters)
+  const DEVIATION_THRESHOLD = 100; // 100 meters
+
+  // Calculate distance between two coordinates in meters (Haversine formula)
+  const calculateDistance = (coord1: [number, number], coord2: [number, number]): number => {
+    const [lat1, lon1] = coord1;
+    const [lat2, lon2] = coord2;
+    
+    const R = 6371000; // Earth's radius in meters
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Check if user has deviated too much from the route
+  const checkRouteDeviation = (userLocation: [number, number], routeCoordinates: [number, number][]): boolean => {
+    if (!routeCoordinates.length) return false;
+    
+    // Find the closest point on the route to the user's location
+    let minDistance = Infinity;
+    
+    for (const coord of routeCoordinates) {
+      const distance = calculateDistance(userLocation, coord);
+      if (distance < minDistance) {
+        minDistance = distance;
+      }
+    }
+    
+    return minDistance > DEVIATION_THRESHOLD;
+  };
+
+  // Check if we should update the route based on user movement
+  const shouldUpdateRoute = (currentLocation: [number, number]): boolean => {
+    // Always update if this is the first time or no route data exists
+    if (!routeData?.coordinates || !lastRouteUpdateLocation) return true;
+    
+    // Don't check deviation if we're currently loading a route
+    if (isLoadingRoute) return false;
+    
+    // Check if user has deviated from the current route
+    const hasDeviated = checkRouteDeviation(currentLocation, routeData.coordinates);
+    
+    // Also check if user has moved significantly from last update location
+    const distanceFromLastUpdate = calculateDistance(currentLocation, lastRouteUpdateLocation);
+    const hasMovedSignificantly = distanceFromLastUpdate > DEVIATION_THRESHOLD;
+    
+    return hasDeviated && hasMovedSignificantly;
+  };
+
+  // Clear only route polylines
+  const clearRouteLines = () => {
+    if (mapInstanceRef.current) {
+      routeLayersRef.current.forEach(layer => {
+        mapInstanceRef.current?.removeLayer(layer);
+      });
+      routeLayersRef.current = [];
+    }
+  };
+
+  // Clear only markers
+  const clearMarkers = () => {
+    if (mapInstanceRef.current) {
+      markersRef.current.forEach(marker => {
+        mapInstanceRef.current?.removeLayer(marker);
+      });
+      markersRef.current = [];
+      
+      if (userLocationMarkerRef.current) {
+        mapInstanceRef.current.removeLayer(userLocationMarkerRef.current);
+        userLocationMarkerRef.current = null;
+      }
+    }
+  };
+
+  // Add route polylines to map
+  const addRouteLines = (coordinates: [number, number][]) => {
+    if (!mapInstanceRef.current) return;
+
+    const map = mapInstanceRef.current;
+
+    // Create the main route polyline
+    const routePolyline = L.polyline(coordinates, {
+      color: getColorValue("blue"),
+      weight: 4,
+      opacity: 0.8,
+      smoothFactor: 1,
+    }).addTo(map);
+
+    // Add animated dashed line on top
+    const animatedLine = L.polyline(coordinates, {
+      color: 'white',
+      weight: 2,
+      opacity: 0.9,
+      dashArray: "10, 10",
+      smoothFactor: 1,
+    }).addTo(map);
+
+    // Add animation to the polyline
+    const pathElement = animatedLine.getElement() as SVGPathElement;
+    if (pathElement) {
+      pathElement.style.strokeDasharray = "10, 10";
+      pathElement.style.animation = "dash 3s linear infinite";
+    }
+
+    // Store references for later cleanup
+    routeLayersRef.current = [routePolyline, animatedLine];
+
+    return routePolyline;
+  };
+
+  // Add all markers to map
+  const addMarkers = () => {
+    if (!mapInstanceRef.current) return;
+
+    const map = mapInstanceRef.current;
+    const newMarkers: L.Marker[] = [];
+
+    // Add markers for each place
+    route.places.forEach((place, index) => {
+      const isStart = index === 0;
+      const isEnd = index === route.places.length - 1;
+
+      // Create custom icons for start and end points
+      let markerIcon;
+      if (isStart) {
+        markerIcon = L.divIcon({
+          className: "numbered-waypoint-marker",
+          html: `<div class="waypoint-number start-marker">${index + 1}</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+      } else if (isEnd) {
+        markerIcon = L.divIcon({
+          className: "numbered-waypoint-marker",
+          html: `<div class="waypoint-number end-marker">${index + 1}</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+      } else {
+        markerIcon = L.divIcon({
+          className: "numbered-waypoint-marker",
+          html: `<div class="waypoint-number">${index + 1}</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+      }
+
+      const marker = L.marker(place.coordinates, { icon: markerIcon }).addTo(map).bindPopup(`
+          <div style="max-width: 200px;">
+            <h3><strong>${place.name}</strong></h3>
+            <p style="margin: 8px 0;">${place.description}</p>
+            <p style="margin: 4px 0;"><em>Stop ${index + 1} ${
+        isStart ? "(Start)" : isEnd ? "(End)" : ""
+      }</em></p>
+            <p style="margin: 4px 0; font-size: 0.9em; color: #666;">Estimated visit: ${
+              place.estimatedVisitTime
+            } minutes</p>
+          </div>
+        `);
+
+      newMarkers.push(marker);
+    });
+
+    // Store references for later cleanup
+    markersRef.current = newMarkers;
+  };
+
+  // Update or add user location marker
+  const updateUserLocationMarker = () => {
+    if (!mapInstanceRef.current || !userLocation) return;
+
+    const map = mapInstanceRef.current;
+
+    // Create user location icon
+    const userIcon = L.divIcon({  
+      html: `<div style="background: #ef4444; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative;">
+               <div style="position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border: 2px solid #ef4444; border-radius: 50%; animation: pulse 2s infinite;"></div>
+             </div>
+             <style>
+               @keyframes pulse {
+                 0% { transform: scale(1); opacity: 1; }
+                 100% { transform: scale(2); opacity: 0; }
+               }
+             </style>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      className: "user-location-marker",
+    });
+
+    if (userLocationMarkerRef.current) {
+      // Update existing marker position
+      userLocationMarkerRef.current.setLatLng(userLocation);
+    } else {
+      // Create new user location marker
+      const userMarker = L.marker(userLocation, { icon: userIcon })
+        .addTo(map)
+        .bindPopup("<div><strong>Your Location</strong></div>");
+
+      userLocationMarkerRef.current = userMarker;
+    }
+  };
+
+  // Function to fetch actual routing data from OSRM
+  const fetchRouteData = async (waypoints: [number, number][]) => {
+    if (waypoints.length < 2) return null;
+    
+    setIsLoadingRoute(true);
+    try {
+      // Create coordinate string for OSRM API (longitude,latitude format)
+      const coordinatesString = waypoints
+        .map(([lat, lng]) => `${lng},${lat}`)
+        .join(';');
+      
+      // Use OSRM demo server (you might want to use your own server in production)
+      const response = await fetch(
+        `https://router.project-osrm.org/route/v1/foot/${coordinatesString}?overview=full&geometries=geojson&steps=true`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`OSRM API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.routes && data.routes.length > 0) {
+        const route = data.routes[0];
+        const coordinates = route.geometry.coordinates.map(([lng, lat]: [number, number]) => [lat, lng] as [number, number]);
+        
+        return {
+          coordinates,
+          distance: route.distance,
+          duration: route.duration,
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('[NavigationMap] Error fetching route data:', error);
+      return null;
+    } finally {
+      setIsLoadingRoute(false);
+    }
+  };
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) {
@@ -96,6 +355,8 @@ const NavigationMap = ({
 
     return () => {
       if (mapInstanceRef.current) {
+        clearRouteLines();
+        clearMarkers();
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
@@ -108,191 +369,133 @@ const NavigationMap = ({
 
     const map = mapInstanceRef.current;
 
-    // Clear existing layers
-    map.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-        map.removeLayer(layer);
-      }
-    });
-
-    // Try to get cached route data for actual routing path
-    const cachedRouteData = routeCache.get(route.id);
-    let routeCoordinates: [number, number][] = [];
-    let polyline: L.Polyline;
-
-    if (cachedRouteData && cachedRouteData.coordinates) {
-      console.log("[NavigationMap] Using cached route data:", {
-        routeId: route.id,
-        coordinateCount: cachedRouteData.coordinates.length,
-        totalDistance: cachedRouteData.summary?.totalDistance,
-        totalTime: cachedRouteData.summary?.totalTime,
-      });
-
-      // Use the actual route coordinates from the cached data
-      routeCoordinates = cachedRouteData.coordinates.map((coord: any) => [
-        coord.lat,
-        coord.lng,
-      ]);
-
-      // Create a detailed polyline from the actual route (static base line)
-      polyline = L.polyline(routeCoordinates, {
-        color: getColorValue("blue"),
-        weight: 4,
-        opacity: 0.8,
-        smoothFactor: 1,
-      }).addTo(map);
-
-      // Add animated dashed line on top
-      const animatedLine = L.polyline(routeCoordinates, {
-        color: 'white',
-        weight: 2,
-        opacity: 0.9,
-        dashArray: "10, 10",
-        smoothFactor: 1,
-      }).addTo(map);
-
-      // Add animation to the polyline
-      const pathElement = animatedLine.getElement() as SVGPathElement;
-      if (pathElement) {
-        pathElement.style.strokeDasharray = "10, 10";
-        pathElement.style.animation = "dash 3s linear infinite";
-      }
-
-      console.log(
-        "[NavigationMap] Drew actual route path with",
-        routeCoordinates.length,
-        "coordinates"
-      );
-    } else {
-      console.log(
-        "[NavigationMap] No cached route data found, falling back to direct connections"
-      );
-
-      // Fall back to simple polyline between places
-      routeCoordinates = route.places.map((place) => place.coordinates);
-      polyline = L.polyline(routeCoordinates, {
-        color: getColorValue("blue"),
-        weight: 4,
-        opacity: 0.8,
-        dashArray: "10, 10", // Dashed line to indicate this is not the actual route
-      }).addTo(map);
+    // Handle initial setup of markers (only once)
+    if (markersRef.current.length === 0) {
+      addMarkers();
     }
 
-    // Add markers for each place
-    route.places.forEach((place, index) => {
-      const isStart = index === 0;
-      const isEnd = index === route.places.length - 1;
+    // Handle user location marker updates
+    if (userLocation) {
+      updateUserLocationMarker();
+    } else if (userLocationMarkerRef.current) {
+      // Remove user location marker if user location is no longer available
+      mapInstanceRef.current?.removeLayer(userLocationMarkerRef.current);
+      userLocationMarkerRef.current = null;
+    }
 
-      // Create custom icons for start and end points
-      let markerIcon;
-      if (isStart) {
-        markerIcon = L.divIcon({
-          className: "numbered-waypoint-marker",
-          html: `<div class="waypoint-number start-marker">${index + 1}</div>`,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
-        });
-      } else if (isEnd) {
-        markerIcon = L.divIcon({
-          className: "numbered-waypoint-marker",
-          html: `<div class="waypoint-number end-marker">${index + 1}</div>`,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
-        });
-      } else {
-        markerIcon = L.divIcon({
-          className: "numbered-waypoint-marker",
-          html: `<div class="waypoint-number">${index + 1}</div>`,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
-        });
+    // Handle route updates
+    let waypoints: [number, number][] = [];
+    let needsRouteUpdate = false;
+    
+    if (userLocation) {
+      waypoints = [userLocation, ...route.places.map((place) => place.coordinates)];
+      needsRouteUpdate = shouldUpdateRoute(userLocation);
+      
+      if (needsRouteUpdate && !isLoadingRoute) {
+        console.log("[NavigationMap] User has deviated from route, recalculating...");
+        setShowDeviationWarning(true);
+      } else if (!needsRouteUpdate) {
+        console.log("[NavigationMap] User is on route, keeping existing path");
+        setShowDeviationWarning(false);
       }
+    } else {
+      // Don't calculate route without user location - wait for user location to be available
+      console.log("[NavigationMap] No user location available, waiting for location...");
+      needsRouteUpdate = false;
+    }
 
-      L.marker(place.coordinates, { icon: markerIcon }).addTo(map).bindPopup(`
-          <div style="max-width: 200px;">
-            <h3><strong>${place.name}</strong></h3>
-            <p style="margin: 8px 0;">${place.description}</p>
-            <p style="margin: 4px 0;"><em>Stop ${index + 1} ${
-        isStart ? "(Start)" : isEnd ? "(End)" : ""
-      }</em></p>
-            <p style="margin: 4px 0; font-size: 0.9em; color: #666;">Estimated visit: ${
-              place.estimatedVisitTime
-            } minutes</p>
-          </div>
-        `);
+    // Only fetch new route if needed and not already loading
+    if (needsRouteUpdate && !isLoadingRoute) {
+      // Clear existing route lines but keep markers
+      clearRouteLines();
+      
+      // Fetch and draw actual routing data
+      const drawRoute = async () => {
+        const routingData = await fetchRouteData(waypoints);
+        
+        if (routingData && routingData.coordinates.length > 0) {
+          // Add new route lines
+          const routePolyline = addRouteLines(routingData.coordinates);
 
-      // Add dashed line from attraction to nearest point on route path (only if we have cached route data)
-      if (cachedRouteData && cachedRouteData.coordinates && routeCoordinates.length > 1) {
-        // Find the closest point on the actual route path to this attraction
-        let closestPoint = routeCoordinates[0];
-        let minDistance = Infinity;
-
-        routeCoordinates.forEach((coord) => {
-          const distance = Math.sqrt(
-            Math.pow(coord[0] - place.coordinates[0], 2) + 
-            Math.pow(coord[1] - place.coordinates[1], 2)
-          );
-          if (distance < minDistance) {
-            minDistance = distance;
-            closestPoint = coord;
+          // Update state with route data
+          setRouteData(routingData);
+          if (userLocation) {
+            setLastRouteUpdateLocation(userLocation);
           }
-        });
+          setShowDeviationWarning(false); // Hide warning after successful update
+          setIsInitialized(true);
 
-        // Only draw the dashed line if the attraction is not already on the route path
-        // (i.e., if the closest point is more than a small threshold away)
-        const threshold = 0.0001; // Small distance threshold
-        if (minDistance > threshold) {
-          L.polyline([place.coordinates, closestPoint], {
-            color: '#64748B',
-            weight: 3,
-            opacity: 0.6,
-            dashArray: '8, 6',
+          // Fit map to show route with proper padding (only on initial load)
+          if (!hasUserInteracted && routePolyline) {
+            if (userLocation) {
+              // Include user location in bounds calculation
+              const allCoordinates = [...routingData.coordinates, userLocation];
+              const bounds = L.latLngBounds(allCoordinates);
+              map.fitBounds(bounds, { padding: [30, 30] });
+            } else {
+              map.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
+            }
+          }
+
+          console.log("[NavigationMap] Drew actual route path with", routingData.coordinates.length, "coordinates");
+        } else {
+          // Fallback to straight lines if routing fails
+          console.log("[NavigationMap] Routing failed, falling back to straight lines");
+          
+          const fallbackPolyline = L.polyline(waypoints, {
+            color: getColorValue("blue"),
+            weight: 4,
+            opacity: 0.8,
+            dashArray: "10, 10", // Dashed to indicate this is not actual routing
           }).addTo(map);
+
+          routeLayersRef.current = [fallbackPolyline];
+          setIsInitialized(true);
+
+          // Fit map to show route with proper padding (only on initial load)
+          if (!hasUserInteracted) {
+            if (userLocation) {
+              const allCoordinates = [...waypoints, userLocation];
+              const bounds = L.latLngBounds(allCoordinates);
+              map.fitBounds(bounds, { padding: [30, 30] });
+            } else {
+              map.fitBounds(fallbackPolyline.getBounds(), { padding: [30, 30] });
+            }
+          }
+        }
+      };
+
+      // Draw the route
+      drawRoute();
+    } else if (routeData && routeLayersRef.current.length === 0 && !isLoadingRoute) {
+      // Use existing route data without recalculating, but only if route lines don't exist and not loading
+      const routePolyline = addRouteLines(routeData.coordinates);
+
+      // Fit map to show route with proper padding (only on initial load)
+      if (!hasUserInteracted && routePolyline) {
+        if (userLocation) {
+          const allCoordinates = [...routeData.coordinates, userLocation];
+          const bounds = L.latLngBounds(allCoordinates);
+          map.fitBounds(bounds, { padding: [30, 30] });
+        } else {
+          map.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
         }
       }
-    });
-
-    // Add user location marker if available
-    if (userLocation) {
-      const userIcon = L.divIcon({  
-        html: `<div style="background: #ef4444; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative;">
-                 <div style="position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border: 2px solid #ef4444; border-radius: 50%; animation: pulse 2s infinite;"></div>
-               </div>
-               <style>
-                 @keyframes pulse {
-                   0% { transform: scale(1); opacity: 1; }
-                   100% { transform: scale(2); opacity: 0; }
-                 }
-               </style>`,
-        iconSize: [20, 20],
-        iconAnchor: [10, 10],
-        className: "user-location-marker",
-      });
-
-      L.marker(userLocation, { icon: userIcon })
-        .addTo(map)
-        .bindPopup("<div><strong>Your Location</strong></div>");
-    }
-
-    // Fit map to show route with proper padding (only on initial load)
-    if (routeCoordinates.length > 0 && !hasUserInteracted) {
-      if (userLocation) {
-        // Include user location in bounds calculation
-        const allCoordinates = [...routeCoordinates, userLocation];
-        const bounds = L.latLngBounds(allCoordinates);
-        map.fitBounds(bounds, { padding: [30, 30] });
-      } else {
-        map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
-      }
-    }
-
-    // Add route info popup if cached data is available
-    if (cachedRouteData && cachedRouteData.summary) {
     }
   }, [route, userLocation, hasUserInteracted]);
 
   return (
     <div className={`h-full w-full relative ${className}`}>
+      {/* Route Deviation Warning */}
+      {showDeviationWarning && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-orange-100 border border-orange-400 px-4 py-2 rounded-lg shadow-lg">
+          <div className="flex items-center gap-2 text-sm text-orange-800">
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+            <span className="font-medium">You've deviated from the route - recalculating...</span>
+          </div>
+        </div>
+      )}
+      
       <style>
         {`
           .numbered-waypoint-marker .waypoint-number {
