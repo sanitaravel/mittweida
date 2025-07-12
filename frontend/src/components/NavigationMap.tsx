@@ -47,6 +47,7 @@ const NavigationMap = ({
   const routeLayersRef = useRef<L.Polyline[]>([]);
   const markersRef = useRef<L.Marker[]>([]);
   const userLocationMarkerRef = useRef<L.Marker | null>(null);
+  const userTrailRef = useRef<L.Polyline | null>(null);
   const [showAttribution, setShowAttribution] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [routeData, setRouteData] = useState<{
@@ -58,6 +59,7 @@ const NavigationMap = ({
   const [showDeviationWarning, setShowDeviationWarning] = useState(false);
   const [lastRouteUpdateLocation, setLastRouteUpdateLocation] = useState<[number, number] | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [userPositionHistory, setUserPositionHistory] = useState<[number, number][]>([]);
   
   // Distance threshold for route deviation (in meters)
   const DEVIATION_THRESHOLD = 100; // 100 meters
@@ -135,6 +137,29 @@ const NavigationMap = ({
         userLocationMarkerRef.current = null;
       }
     }
+  };
+
+  // Update user trail polyline
+  const updateUserTrail = (newPositions: [number, number][]) => {
+    if (!mapInstanceRef.current || newPositions.length < 2) return;
+
+    const map = mapInstanceRef.current;
+
+    // Remove existing trail if it exists
+    if (userTrailRef.current) {
+      map.removeLayer(userTrailRef.current);
+      userTrailRef.current = null;
+    }
+
+    // Create new trail polyline
+    const userTrail = L.polyline(newPositions, {
+      color: '#ef4444', // Red color
+      weight: 3,
+      opacity: 0.8,
+      smoothFactor: 1,
+    }).addTo(map);
+
+    userTrailRef.current = userTrail;
   };
 
   // Add route polylines to map
@@ -357,6 +382,13 @@ const NavigationMap = ({
       if (mapInstanceRef.current) {
         clearRouteLines();
         clearMarkers();
+        
+        // Clean up user trail
+        if (userTrailRef.current) {
+          mapInstanceRef.current.removeLayer(userTrailRef.current);
+          userTrailRef.current = null;
+        }
+        
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
@@ -376,6 +408,30 @@ const NavigationMap = ({
 
     // Handle user location marker updates
     if (userLocation) {
+      // Update position history
+      setUserPositionHistory(prevHistory => {
+        const newHistory = [...prevHistory];
+        
+        // Only add if this is a new position (avoid duplicates)
+        const lastPosition = newHistory[newHistory.length - 1];
+        if (!lastPosition || 
+            calculateDistance(userLocation, lastPosition) > 5) { // 5 meter threshold
+          newHistory.push(userLocation);
+          
+          // Keep only last 1000 positions to avoid memory issues
+          if (newHistory.length > 1000) {
+            newHistory.shift();
+          }
+        }
+        
+        // Update user trail if we have at least 2 positions
+        if (newHistory.length >= 2) {
+          updateUserTrail(newHistory);
+        }
+        
+        return newHistory;
+      });
+      
       updateUserLocationMarker();
     } else if (userLocationMarkerRef.current) {
       // Remove user location marker if user location is no longer available
