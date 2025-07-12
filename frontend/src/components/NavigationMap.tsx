@@ -134,13 +134,29 @@ const NavigationMap = ({
         coord.lng,
       ]);
 
-      // Create a detailed polyline from the actual route
+      // Create a detailed polyline from the actual route (static base line)
       polyline = L.polyline(routeCoordinates, {
         color: getColorValue("blue"),
         weight: 4,
         opacity: 0.8,
         smoothFactor: 1,
       }).addTo(map);
+
+      // Add animated dashed line on top
+      const animatedLine = L.polyline(routeCoordinates, {
+        color: 'white',
+        weight: 2,
+        opacity: 0.9,
+        dashArray: "10, 10",
+        smoothFactor: 1,
+      }).addTo(map);
+
+      // Add animation to the polyline
+      const pathElement = animatedLine.getElement() as SVGPathElement;
+      if (pathElement) {
+        pathElement.style.strokeDasharray = "10, 10";
+        pathElement.style.animation = "dash 3s linear infinite";
+      }
 
       console.log(
         "[NavigationMap] Drew actual route path with",
@@ -239,8 +255,8 @@ const NavigationMap = ({
     // Add user location marker if available
     if (userLocation) {
       const userIcon = L.divIcon({  
-        html: `<div style="background: var(--color-warmGray); border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative;">
-                 <div style="position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border: 2px solid var(--color-warmGray); border-radius: 50%; animation: pulse 2s infinite;"></div>
+        html: `<div style="background: #ef4444; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative;">
+                 <div style="position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border: 2px solid #ef4444; border-radius: 50%; animation: pulse 2s infinite;"></div>
                </div>
                <style>
                  @keyframes pulse {
@@ -277,6 +293,46 @@ const NavigationMap = ({
 
   return (
     <div className={`h-full w-full relative ${className}`}>
+      <style>
+        {`
+          .numbered-waypoint-marker .waypoint-number {
+            background: var(--color-dustyBlue);
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border: 2px solid white;
+          }
+          
+          .numbered-waypoint-marker .start-marker {
+            background: var(--color-sage);
+          }
+          
+          .numbered-waypoint-marker .end-marker {
+            background: var(--color-terracotta);
+          }
+
+          @keyframes dash {
+            0% {
+              stroke-dashoffset: 20;
+            }
+            100% {
+              stroke-dashoffset: 0;
+            }
+          }
+
+          /* Global animation for any SVG path elements */
+          .leaflet-zoom-animated path[style*="animation"] {
+            animation: dash 3s linear infinite;
+          }
+        `}
+      </style>
       <div ref={mapRef} className="w-full h-full rounded-lg" />
 
       {/* Custom Zoom Controls */}
