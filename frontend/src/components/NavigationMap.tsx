@@ -35,12 +35,14 @@ interface NavigationMapProps {
   route: Route;
   userLocation?: [number, number] | null;
   className?: string;
+  skippedWaypoints?: Set<string>;
 }
 
 const NavigationMap = ({
   route,
   userLocation,
   className = "",
+  skippedWaypoints = new Set(),
 }: NavigationMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -48,6 +50,7 @@ const NavigationMap = ({
   const markersRef = useRef<L.Marker[]>([]);
   const userLocationMarkerRef = useRef<L.Marker | null>(null);
   const userTrailRef = useRef<L.Polyline | null>(null);
+  const previousSkippedSizeRef = useRef(0);
   const [showAttribution, setShowAttribution] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [routeData, setRouteData] = useState<{
@@ -61,7 +64,7 @@ const NavigationMap = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [userPositionHistory, setUserPositionHistory] = useState<[number, number][]>([]);
   
-  // Distance threshold for route deviation (in meters)
+  // Distance thresholds (in meters)
   const DEVIATION_THRESHOLD = 100; // 100 meters
 
   // Calculate distance between two coordinates in meters (Haversine formula)
@@ -395,6 +398,21 @@ const NavigationMap = ({
     };
   }, [route]);
 
+  // Clear route data when waypoints are skipped to force regeneration
+  useEffect(() => {
+    const currentSkippedSize = skippedWaypoints.size;
+    const previousSkippedSize = previousSkippedSizeRef.current;
+    
+    if (currentSkippedSize > previousSkippedSize) {
+      console.log("[NavigationMap] New waypoints skipped, clearing route for regeneration");
+      setRouteData(null);
+      setLastRouteUpdateLocation(null);
+      clearRouteLines(); // Immediately clear the visual route
+    }
+    
+    previousSkippedSizeRef.current = currentSkippedSize;
+  }, [skippedWaypoints]);
+
   // Update route and markers
   useEffect(() => {
     if (!mapInstanceRef.current || !route.places.length) return;
@@ -444,7 +462,9 @@ const NavigationMap = ({
     let needsRouteUpdate = false;
     
     if (userLocation) {
-      waypoints = [userLocation, ...route.places.map((place) => place.coordinates)];
+      // Filter out skipped waypoints when calculating route
+      const remainingPlaces = route.places.filter(place => !skippedWaypoints.has(place.id));
+      waypoints = [userLocation, ...remainingPlaces.map((place) => place.coordinates)];
       needsRouteUpdate = shouldUpdateRoute(userLocation);
       
       if (needsRouteUpdate && !isLoadingRoute) {
@@ -538,7 +558,9 @@ const NavigationMap = ({
         }
       }
     }
-  }, [route, userLocation, hasUserInteracted]);
+  }, [route, userLocation, hasUserInteracted, skippedWaypoints]);
+
+
 
   return (
     <div className={`h-full w-full relative ${className}`}>
