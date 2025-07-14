@@ -1,4 +1,5 @@
 import { useParams, useLocation } from "wouter";
+import { useTourContext } from "../contexts/TourContext";
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 
@@ -10,13 +11,15 @@ interface Story {
 }
 
 const StoryView = () => {
+  const { addVisitedWaypoint } = useTourContext();
   const { t } = useTranslation();
-  const { stopId } = useParams<{ stopId: string }>();
+  const { routeId, stopId } = useParams<{ routeId: string; stopId: string }>();
   const [, setLocation] = useLocation();
   const [currentStory, setCurrentStory] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);  const progressRef = useRef(0);
+  // Removed unused isPaused state
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const progressRef = useRef(0);
   const isPausedRef = useRef(false);
   // Duration for each story in seconds (can be customized per story or audio length)
   const STORY_DURATION = 8; // 8 seconds per story
@@ -43,15 +46,16 @@ const StoryView = () => {
       title: t("stoneCarvings"),
       description: t("stoneCarvingsDescription"),
     },
-  ];  // Ensure currentStory is within valid bounds on mount
+  ]; // Ensure currentStory is within valid bounds on mount
   useEffect(() => {
     if (
-      stories && stories.length > 0 &&
+      stories &&
+      stories.length > 0 &&
       (currentStory < 0 || currentStory >= stories.length)
     ) {
       setCurrentStory(0);
     }
-  }, [currentStory, stories]);// Auto-progression effect
+  }, [currentStory, stories]); // Auto-progression effect
   useEffect(() => {
     // Immediately reset progress when story changes (before any intervals)
     progressRef.current = 0;
@@ -71,19 +75,20 @@ const StoryView = () => {
           setTimeout(() => {
             setCurrentStory(currentStory + 1);
             isPausedRef.current = false;
-            setIsPaused(false);
+            // setIsPaused removed
             setIsTransitioning(false);
-          }, 150);        } else {
+          }, 150);
+        } else {
           // Last story completed, stop progression and return to guided tour
           isPausedRef.current = true;
-          setIsPaused(true);
+          // setIsPaused removed
           progressRef.current = 100;
           setProgress(100);
-          
-          // Wait 2 seconds before returning to guided tour
-          setTimeout(() => {
-            setLocation(`/tour/${stopId || 'church'}`);
-          }, 2000);
+
+          if (stopId) {
+            addVisitedWaypoint(stopId);
+          }
+          setLocation(`/tour/${routeId}`);
         }
         return; // Exit early to prevent further updates
       }
@@ -100,7 +105,7 @@ const StoryView = () => {
     setTimeout(() => {
       setCurrentStory((prev) => (prev + 1) % stories.length);
       isPausedRef.current = false;
-      setIsPaused(false);
+      // setIsPaused removed
       setIsTransitioning(false);
     }, 150); // Half of transition duration
   };
@@ -112,7 +117,7 @@ const StoryView = () => {
     setTimeout(() => {
       setCurrentStory((prev) => (prev - 1 + stories.length) % stories.length);
       isPausedRef.current = false;
-      setIsPaused(false);
+      // setIsPaused removed
       setIsTransitioning(false);
     }, 150); // Half of transition duration
   };
@@ -131,12 +136,12 @@ const StoryView = () => {
   // Toggle pause/play when pressing and holding the screen
   const handleMouseDown = () => {
     isPausedRef.current = true;
-    setIsPaused(true);
+    // setIsPaused removed
   };
 
   const handleMouseUp = () => {
     isPausedRef.current = false;
-    setIsPaused(false);
+    // setIsPaused removed
   }; // Prevent context menu on long press
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();

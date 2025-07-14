@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { mittweidaRoutes } from '../data/routes';
+import { useTourContext } from '../contexts/TourContext';
 import NavigationMap from '../components/NavigationMap';
-import { SkipForward } from 'lucide-react';
+import { SkipForward, MapPin, Navigation } from 'lucide-react';
 
 interface Place {
   id: string;
@@ -23,16 +24,49 @@ interface Route {
 
 const GuidedTour = () => {
   const { routeId } = useParams<{ routeId: string }>();
+  const { setRouteId, addVisitedWaypoint, visitedWaypoints } = useTourContext();
   const [, setLocation] = useLocation();
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [nearbyWaypoint, setNearbyWaypoint] = useState<Place | null>(null);
   const [skippedWaypoints, setSkippedWaypoints] = useState<Set<string>>(new Set());
+  const [geolocationStatus, setGeolocationStatus] = useState<'pending' | 'granted' | 'denied' | 'unavailable'>('pending');
+  const [showLocationButton, setShowLocationButton] = useState(false);
   
   // Distance thresholds (in meters)
   const WAYPOINT_PROXIMITY_THRESHOLD = 50; // 50 meters to show waypoint card
 
   // Find the current route
   const route = mittweidaRoutes.find(r => r.id === routeId) as Route | undefined;
+  // Set routeId in context on mount
+  useEffect(() => {
+    setRouteId(routeId || null);
+  }, [routeId, setRouteId]);
+
+  // Request geolocation permission (user-initiated)
+  const requestGeolocation = () => {
+    if (!navigator.geolocation) {
+      setGeolocationStatus('unavailable');
+      setShowLocationButton(false);
+      return;
+    }
+
+    // Use getCurrentPosition to trigger the browser's native permission dialog
+    // This must be called from a user interaction to work reliably
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        // Permission granted and location received
+        setGeolocationStatus('granted');
+        setShowLocationButton(false);
+        setUserLocation([position.coords.latitude, position.coords.longitude]);
+      },
+      (error) => {
+        console.error('Geolocation permission denied:', error);
+        setGeolocationStatus('denied');
+        setShowLocationButton(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
 
   // Calculate distance between two coordinates in meters (Haversine formula)
   const calculateDistance = (coord1: [number, number], coord2: [number, number]): number => {
@@ -87,52 +121,120 @@ const GuidedTour = () => {
       });
     }
     
-    // Hide the waypoint card
-    setNearbyWaypoint(null);
+    // If geolocation is not available, automatically show next waypoint
+    if (geolocationStatus === 'denied' || geolocationStatus === 'unavailable') {
+      const nextWaypoint = route.places.find((place, index) => 
+        index > currentWaypointIndex && !skippedWaypoints.has(place.id)
+      );
+      setNearbyWaypoint(nextWaypoint || null);
+    } else {
+      // Hide the waypoint card for geolocation mode
+      setNearbyWaypoint(null);
+    }
   };
 
   // Show story for current waypoint
   const showWaypointStory = () => {
     if (!nearbyWaypoint) return;
-    
-    // Navigate to story view
-    setLocation(`/story/${nearbyWaypoint.id}`);
+
+    // Update to next waypoint before redirecting
+    const currentWaypointIndex = route?.places.findIndex(place => place.id === nearbyWaypoint.id) ?? -1;
+    if (currentWaypointIndex !== -1) {
+      const nextWaypoint = route?.places.find((place, index) => 
+        index > currentWaypointIndex &&
+        !skippedWaypoints.has(place.id) &&
+        !visitedWaypoints.includes(place.id)
+      );
+      setNearbyWaypoint(nextWaypoint || null);
+    }
+
+    addVisitedWaypoint(nearbyWaypoint.id);
+    setLocation(`/story/${routeId}/${nearbyWaypoint.id}`);
   };
 
-  // Setup geolocation tracking
+  // Setup geolocation on component mount
   useEffect(() => {
-    if (!navigator.geolocation) return;
-    
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        setUserLocation([position.coords.latitude, position.coords.longitude]);
-      },
-      (error) => {
-        console.error('Error getting location:', error);
-      },
-      { enableHighAccuracy: true }
-    );
-    
-    return () => navigator.geolocation.clearWatch(watchId);
+    if (!navigator.geolocation) {
+      setGeolocationStatus('unavailable');
+      return;
+    }
+
+    // Check existing permission status
+    const checkExistingPermission = async () => {
+      try {
+        if ('permissions' in navigator) {
+          const permission = await navigator.permissions.query({ name: 'geolocation' });
+          if (permission.state === 'granted') {
+            setGeolocationStatus('granted');
+            return;
+          }
+        }
+        
+        // For denied, prompt, or when permissions API not available, 
+        // show a button to request permission (requires user interaction)
+        setShowLocationButton(true);
+      } catch (error) {
+        // If permissions API fails, show button to request permission
+        setShowLocationButton(true);
+      }
+    };
+
+    checkExistingPermission();
   }, []);
+
+  // Setup geolocation tracking when permission is granted
+  useEffect(() => {
+    let watchId: number;
+    
+    if (geolocationStatus === 'granted') {
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          setUserLocation([position.coords.latitude, position.coords.longitude]);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        },
+        { enableHighAccuracy: true }
+      );
+    }
+    
+    return () => {
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+  }, [geolocationStatus]);
 
   // Check for nearby waypoints when user location changes
   useEffect(() => {
-    if (!userLocation || !route) return;
+    if (!route) return;
 
-    const proximity = checkWaypointProximity(userLocation);
-    if (proximity) {
-      setNearbyWaypoint(proximity.place);
-    } else {
-      // Only clear if we're not currently showing a waypoint (to prevent flickering)
-      if (nearbyWaypoint) {
-        const currentDistance = calculateDistance(userLocation, nearbyWaypoint.coordinates);
-        if (currentDistance > WAYPOINT_PROXIMITY_THRESHOLD * 1.5) { // Add some hysteresis
-          setNearbyWaypoint(null);
+    // If geolocation is available and we have user location
+    if (geolocationStatus === 'granted' && userLocation) {
+      const proximity = checkWaypointProximity(userLocation);
+      if (proximity) {
+        setNearbyWaypoint(proximity.place);
+      } else {
+        // Only clear if we're not currently showing a waypoint (to prevent flickering)
+        if (nearbyWaypoint) {
+          const currentDistance = calculateDistance(userLocation, nearbyWaypoint.coordinates);
+          if (currentDistance > WAYPOINT_PROXIMITY_THRESHOLD * 1.5) { // Add some hysteresis
+            setNearbyWaypoint(null);
+          }
         }
       }
     }
-  }, [userLocation, route, nearbyWaypoint, WAYPOINT_PROXIMITY_THRESHOLD]);
+    // If geolocation is denied or unavailable, show the first non-skipped waypoint
+    else if (geolocationStatus === 'denied' || geolocationStatus === 'unavailable') {
+      // Only show waypoints that are not skipped and not visited
+      const firstUnskippedWaypoint = route.places.find(
+        place => !skippedWaypoints.has(place.id) && !visitedWaypoints.includes(place.id)
+      );
+      if (firstUnskippedWaypoint && firstUnskippedWaypoint.id !== nearbyWaypoint?.id) {
+        setNearbyWaypoint(firstUnskippedWaypoint);
+      }
+    }
+  }, [userLocation, route, nearbyWaypoint, skippedWaypoints, geolocationStatus, WAYPOINT_PROXIMITY_THRESHOLD]);
 
   useEffect(() => {
     if (!route) {
@@ -152,17 +254,69 @@ const GuidedTour = () => {
     );
   }
 
+  // Prepare filtered waypoints for route calculation (exclude visited)
+  const routeWaypoints = route ? route.places.filter(place => !visitedWaypoints.includes(place.id)) : [];
+
   return (
     <div className="h-screen w-full relative">
-      <NavigationMap
-        route={route}
-        userLocation={userLocation}
-        className="h-full"
-        skippedWaypoints={skippedWaypoints}
-      />
+      {route && (
+        <NavigationMap
+          route={route}
+          userLocation={userLocation}
+          className="h-full"
+          skippedWaypoints={skippedWaypoints}
+          routeWaypoints={routeWaypoints}
+        />
+      )}
+
+      {/* Enable Location Button */}
+      {showLocationButton && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[1002]">
+          <div className="bg-white rounded-lg p-6 shadow-xl max-w-sm mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <Navigation className="text-blue-600" size={24} />
+              <h3 className="text-lg font-semibold text-gray-900">Enable Location</h3>
+            </div>
+            <p className="text-gray-700 mb-4 text-sm">
+              Get personalized navigation and see nearby waypoints by enabling location access.
+            </p>
+            <button
+              onClick={requestGeolocation}
+              className="w-full bg-blue-600 text-white rounded-lg px-4 py-3 font-medium hover:bg-blue-700 transition-all duration-150 flex items-center justify-center gap-2"
+            >
+              <Navigation size={18} />
+              Enable Location Access
+            </button>
+            <button
+              onClick={() => {
+                setGeolocationStatus('denied');
+                setShowLocationButton(false);
+              }}
+              className="w-full mt-2 text-gray-600 text-sm hover:text-gray-800 transition-colors"
+            >
+              Continue without location
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Location Status Indicator */}
+      {(geolocationStatus === 'denied' || geolocationStatus === 'unavailable') && (
+        <div className="absolute top-4 left-4 right-4 z-[1001] bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <div className="flex items-center gap-2">
+            <MapPin className="text-amber-600" size={16} />
+            <p className="text-sm text-amber-800">
+              {geolocationStatus === 'unavailable' 
+                ? 'Location services unavailable. Showing all waypoints in order.'
+                : 'Location access denied. Showing all waypoints in order.'
+              }
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Nearby Waypoint Card */}
-      {nearbyWaypoint && (
+      {nearbyWaypoint && !visitedWaypoints.includes(nearbyWaypoint.id) && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[1001] bg-white border border-gray-300 rounded-lg shadow-lg p-4 max-w-xs w-full mx-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
@@ -184,6 +338,11 @@ const GuidedTour = () => {
                 ~{nearbyWaypoint.estimatedVisitTime} min
               </span>
             </div>
+            {geolocationStatus === 'granted' && userLocation && (
+              <div className="text-xs text-gray-600">
+                Distance: {Math.round(calculateDistance(userLocation, nearbyWaypoint.coordinates))}m
+              </div>
+            )}
             <div className="flex gap-2 mt-2">
               <button
                 onClick={skipCurrentWaypoint}

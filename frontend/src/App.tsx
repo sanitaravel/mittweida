@@ -1,5 +1,6 @@
 import { Router, Route } from "wouter";
 import { SettingsProvider } from "./contexts/SettingsContext";
+import { TourProvider } from "./contexts/TourContext";
 import Welcome from "./pages/Welcome";
 import RouteSelection from "./pages/RouteSelection";
 import CreateTour from "./pages/CreateTour";
@@ -17,8 +18,10 @@ function App() {
           <Route path="/routes" component={RouteSelection} />
           <Route path="/create" component={CreateTour} />
           <Route path="/settings" component={Settings} />
-          <Route path="/tour/:routeId" component={GuidedTour} />
-          <Route path="/story/:stopId" component={StoryView} />
+          <TourProvider>
+            <Route path="/tour/:routeId" component={GuidedTour} />
+            <Route path="/story/:routeId/:stopId" component={StoryView} />
+          </TourProvider>
           <Route path="/completion" component={Completion} />
         </div>
       </Router>

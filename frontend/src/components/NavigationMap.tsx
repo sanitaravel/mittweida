@@ -36,6 +36,7 @@ interface NavigationMapProps {
   userLocation?: [number, number] | null;
   className?: string;
   skippedWaypoints?: Set<string>;
+  routeWaypoints?: Place[];
 }
 
 const NavigationMap = ({
@@ -43,6 +44,7 @@ const NavigationMap = ({
   userLocation,
   className = "",
   skippedWaypoints = new Set(),
+  routeWaypoints,
 }: NavigationMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -113,18 +115,16 @@ const NavigationMap = ({
     // Also check if user has moved significantly from last update location
     const distanceFromLastUpdate = calculateDistance(currentLocation, lastRouteUpdateLocation);
     const hasMovedSignificantly = distanceFromLastUpdate > DEVIATION_THRESHOLD;
-    
-    return hasDeviated && hasMovedSignificantly;
-  };
 
-  // Clear only route polylines
-  const clearRouteLines = () => {
+    // No need to update polyline here, SVG will render from context
     if (mapInstanceRef.current) {
       routeLayersRef.current.forEach(layer => {
         mapInstanceRef.current?.removeLayer(layer);
       });
       routeLayersRef.current = [];
     }
+    
+    return hasDeviated && hasMovedSignificantly;
   };
 
   // Clear only markers
@@ -165,6 +165,7 @@ const NavigationMap = ({
     userTrailRef.current = userTrail;
   };
 
+
   // Add route polylines to map
   const addRouteLines = (coordinates: [number, number][]) => {
     if (!mapInstanceRef.current) return;
@@ -199,6 +200,16 @@ const NavigationMap = ({
     routeLayersRef.current = [routePolyline, animatedLine];
 
     return routePolyline;
+  };
+
+  // Clear route polylines from map
+  const clearRouteLines = () => {
+    if (mapInstanceRef.current && routeLayersRef.current.length > 0) {
+      routeLayersRef.current.forEach(layer => {
+        mapInstanceRef.current?.removeLayer(layer);
+      });
+      routeLayersRef.current = [];
+    }
   };
 
   // Add all markers to map
@@ -462,9 +473,9 @@ const NavigationMap = ({
     let needsRouteUpdate = false;
     
     if (userLocation) {
-      // Filter out skipped waypoints when calculating route
-      const remainingPlaces = route.places.filter(place => !skippedWaypoints.has(place.id));
-      waypoints = [userLocation, ...remainingPlaces.map((place) => place.coordinates)];
+      // Use routeWaypoints for route calculation if provided, else fallback to skipped logic
+      const waypointsList: Place[] = routeWaypoints ?? route.places.filter((place: Place) => !skippedWaypoints.has(place.id));
+      waypoints = [userLocation, ...waypointsList.map((place: Place) => place.coordinates)];
       needsRouteUpdate = shouldUpdateRoute(userLocation);
       
       if (needsRouteUpdate && !isLoadingRoute) {
