@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
-import { mittweidaRoutes } from "../data/routes";
+import { fetchData } from "../utils/api";
 import { useTourContext } from "../contexts/TourContext";
 import NavigationMap from "../components/NavigationMap";
 import { SkipForward, MapPin, Navigation } from "lucide-react";
@@ -14,12 +14,18 @@ interface Place {
   estimatedVisitTime: number;
 }
 
+interface Feature {
+  key: string;
+  name: string;
+}
+
 interface Route {
   id: string;
   name: string;
   description: string;
   places: Place[];
   color: string;
+  features: Feature[];
 }
 
 const GuidedTour = () => {
@@ -30,6 +36,9 @@ const GuidedTour = () => {
     null
   );
   const [nearbyWaypoint, setNearbyWaypoint] = useState<Place | null>(null);
+  const [currentStop, setCurrentStop] = useState<Place | null>(null);
+  const [stopLoading, setStopLoading] = useState(false);
+  const [stopError, setStopError] = useState<string | null>(null);
   const [skippedWaypoints, setSkippedWaypoints] = useState<Set<string>>(
     new Set()
   );
@@ -41,10 +50,25 @@ const GuidedTour = () => {
   // Distance thresholds (in meters)
   const WAYPOINT_PROXIMITY_THRESHOLD = 50; // 50 meters to show waypoint card
 
-  // Find the current route
-  const route = mittweidaRoutes.find((r) => r.id === routeId) as
-    | Route
-    | undefined;
+  // Fetch the current route from API
+  const [route, setRoute] = useState<Route | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!routeId) return;
+    setLoading(true);
+    setError(null);
+    fetchData(`routes/${routeId}`)
+      .then((data) => {
+        setRoute(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [routeId]);
   // Set routeId in context on mount
   useEffect(() => {
     setRouteId(routeId || null);
@@ -137,6 +161,25 @@ const GuidedTour = () => {
     geolocationStatus,
     WAYPOINT_PROXIMITY_THRESHOLD,
   ]);
+
+  // Fetch current stop data from API when nearbyWaypoint changes
+  useEffect(() => {
+    if (!nearbyWaypoint) {
+      setCurrentStop(null);
+      return;
+    }
+    setStopLoading(true);
+    setStopError(null);
+    fetchData(`place/${nearbyWaypoint.id}`)
+      .then((data) => {
+        setCurrentStop(data);
+        setStopLoading(false);
+      })
+      .catch((err) => {
+        setStopError(err.message);
+        setStopLoading(false);
+      });
+  }, [nearbyWaypoint]);
   const skipCurrentWaypoint = () => {
     if (!nearbyWaypoint || !route) return;
 
@@ -253,23 +296,37 @@ const GuidedTour = () => {
   // ...existing code...
 
   useEffect(() => {
-    if (!route) {
+    if (!loading && !route) {
       // Redirect to routes if route not found
       setLocation("/routes");
     }
-  }, [route, setLocation]);
+  }, [route, loading, setLocation]);
 
-  if (!route) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-charcoal mb-2">
-            Route not found
+            Loading route...
           </h2>
-          <p className="text-charcoal/70">Redirecting to route selection...</p>
         </div>
       </div>
     );
+  }
+  if (error) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">
+            Error loading route
+          </h2>
+          <p className="text-charcoal/70">{error}</p>
+        </div>
+      </div>
+    );
+  }
+  if (!route) {
+    return null;
   }
 
   // Prepare filtered waypoints for route calculation (exclude visited)
@@ -346,55 +403,63 @@ const GuidedTour = () => {
         </div>
       )}
 
-      {/* Nearby Waypoint Card */}
+      {/* Nearby Waypoint Card with API data */}
       {nearbyWaypoint && !visitedWaypoints.includes(nearbyWaypoint.id) && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[1001] bg-white border border-gray-300 rounded-lg shadow-lg p-4 max-w-xs w-full mx-4">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">{nearbyWaypoint.name}</h3>
-              <button
-                onClick={skipCurrentWaypoint}
-                className="text-gray-500 hover:text-gray-700"
-                title="Skip this waypoint"
-              >
-                <SkipForward size={18} />
-              </button>
-            </div>
-            <p className="text-sm text-gray-700">
-              {nearbyWaypoint.description}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs bg-blue-100 text-blue-800 rounded-full px-3 py-1">
-                {nearbyWaypoint.type}
-              </span>
-              <span className="text-xs bg-gray-100 text-gray-800 rounded-full px-3 py-1">
-                ~{nearbyWaypoint.estimatedVisitTime} min
-              </span>
-            </div>
-            {geolocationStatus === "granted" && userLocation && (
-              <div className="text-xs text-gray-600">
-                Distance:{" "}
-                {Math.round(
-                  calculateDistance(userLocation, nearbyWaypoint.coordinates)
-                )}
-                m
+          {stopLoading ? (
+            <div className="text-center text-gray-500">Loading stop...</div>
+          ) : stopError ? (
+            <div className="text-center text-red-600">Error: {stopError}</div>
+          ) : currentStop ? (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">{currentStop.name}</h3>
+                <button
+                  onClick={skipCurrentWaypoint}
+                  className="text-gray-500 hover:text-gray-700"
+                  title="Skip this waypoint"
+                >
+                  <SkipForward size={18} />
+                </button>
               </div>
-            )}
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={skipCurrentWaypoint}
-                className="flex-1 bg-gray-200 text-gray-800 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-gray-300 transition-all duration-150"
-              >
-                Skip
-              </button>
-              <button
-                onClick={showWaypointStory}
-                className="flex-1 bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-md hover:bg-blue-700 transition-all duration-150"
-              >
-                View Story
-              </button>
+              <p className="text-sm text-gray-700">
+                {currentStop.description}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs bg-blue-100 text-blue-800 rounded-full px-3 py-1">
+                  {currentStop.type && typeof currentStop.type === 'object' && 'name' in currentStop.type
+                    ? (currentStop.type as { name: string }).name
+                    : currentStop.type}
+                </span>
+                <span className="text-xs bg-gray-100 text-gray-800 rounded-full px-3 py-1">
+                  ~{currentStop.estimatedVisitTime} min
+                </span>
+              </div>
+              {geolocationStatus === "granted" && userLocation && (
+                <div className="text-xs text-gray-600">
+                  Distance: {" "}
+                  {Math.round(
+                    calculateDistance(userLocation, currentStop.coordinates)
+                  )}
+                  m
+                </div>
+              )}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={skipCurrentWaypoint}
+                  className="flex-1 bg-gray-200 text-gray-800 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-gray-300 transition-all duration-150"
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={showWaypointStory}
+                  className="flex-1 bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-md hover:bg-blue-700 transition-all duration-150"
+                >
+                  View Story
+                </button>
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       )}
 

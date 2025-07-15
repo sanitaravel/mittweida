@@ -1,0 +1,519 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["App"]
+      }
+    },
+    "/features": {
+      "get": {
+        "operationId": "FeaturesController_getAllFeatures",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of features",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Feature"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get all features",
+        "tags": ["features"]
+      },
+      "post": {
+        "operationId": "FeaturesController_addFeature",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Feature created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Feature"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Add a new feature",
+        "tags": ["features"]
+      }
+    },
+    "/place-types": {
+      "get": {
+        "operationId": "PlaceTypeController_getAllPlaceTypes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of place types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlaceType"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get all place types",
+        "tags": ["place-types"]
+      },
+      "post": {
+        "operationId": "PlaceTypeController_addPlaceType",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Place type created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceType"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Add a new place type",
+        "tags": ["place-types"]
+      }
+    },
+    "/carousel/{placeKey}": {
+      "get": {
+        "operationId": "CarouselController_getSlidesByPlaceKey",
+        "parameters": [
+          {
+            "name": "placeKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CarouselSlide"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get all carousel slides for a specific placeKey",
+        "tags": ["carousel"]
+      }
+    },
+    "/carousel/upload": {
+      "post": {
+        "operationId": "CarouselController_addSlideWithImage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "placeKey": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Add a new carousel slide with image upload",
+        "tags": ["carousel"]
+      }
+    },
+    "/place": {
+      "get": {
+        "operationId": "PlaceController_getAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Place"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get all places",
+        "tags": ["place"]
+      }
+    },
+    "/place/{id}": {
+      "get": {
+        "operationId": "PlaceController_getById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Place"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get place by ID",
+        "tags": ["place"]
+      }
+    },
+    "/routes": {
+      "get": {
+        "operationId": "RoutesController_getAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Route"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get all routes",
+        "tags": ["routes"]
+      }
+    },
+    "/routes/{id}": {
+      "get": {
+        "operationId": "RoutesController_getById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Route"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get route by ID",
+        "tags": ["routes"]
+      }
+    },
+    "/review": {
+      "post": {
+        "operationId": "ReviewController_addReview",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Review"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Review"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Submit a review for a route",
+        "tags": ["review"]
+      }
+    }
+  },
+  "info": {
+    "title": "Mittweida API",
+    "description": "API documentation",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "Feature": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "parks",
+            "description": "Unique slug key for the feature"
+          },
+          "name": {
+            "type": "string",
+            "example": "Parks",
+            "description": "Human-readable name of the feature"
+          }
+        },
+        "required": ["key", "name"]
+      },
+      "PlaceType": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "landmark",
+            "description": "Unique slug key for the place type"
+          },
+          "name": {
+            "type": "string",
+            "example": "Landmark",
+            "description": "Human-readable name of the place type"
+          }
+        },
+        "required": ["key", "name"]
+      },
+      "CarouselSlide": {
+        "type": "object",
+        "properties": {
+          "placeKey": {
+            "type": "string",
+            "example": "college-grounds",
+            "description": "Key of the place this slide belongs to"
+          },
+          "order": {
+            "type": "number",
+            "example": 1,
+            "description": "Order number of the slide for the place"
+          },
+          "title": {
+            "type": "string",
+            "example": "Welcome to College Grounds",
+            "description": "Title of the carousel slide"
+          },
+          "text": {
+            "type": "string",
+            "example": "Discover the green campus",
+            "description": "Text for the carousel slide"
+          },
+          "image": {
+            "type": "string",
+            "example": "/images/college1.jpg",
+            "description": "Image URL or path for the slide"
+          }
+        },
+        "required": ["placeKey", "order", "title", "text", "image"]
+      },
+      "Place": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "train-station",
+            "description": "Unique place ID"
+          },
+          "name": {
+            "type": "string",
+            "example": "Mittweida Train Station",
+            "description": "Name of the place"
+          },
+          "description": {
+            "type": "string",
+            "example": "Historic railway station, gateway to the city",
+            "description": "Description of the place"
+          },
+          "coordinates": {
+            "example": [50.9874227359811, 12.960510479210734],
+            "description": "Coordinates [lat, lng]",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "type": {
+            "description": "Type of the place",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlaceType"
+              }
+            ]
+          },
+          "estimatedVisitTime": {
+            "type": "number",
+            "example": 10,
+            "description": "Estimated visit time in minutes"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "coordinates",
+          "type",
+          "estimatedVisitTime"
+        ]
+      },
+      "Route": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "historic-center",
+            "description": "Unique route ID"
+          },
+          "name": {
+            "type": "string",
+            "example": "Historic City Center",
+            "description": "Name of the route"
+          },
+          "stops": {
+            "type": "number",
+            "example": 4,
+            "description": "Number of stops in the route"
+          },
+          "features": {
+            "description": "Features of the route",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Feature"
+            }
+          },
+          "description": {
+            "type": "string",
+            "example": "Explore the charming historic center of Mittweida...",
+            "description": "Description of the route"
+          },
+          "places": {
+            "description": "List of places in the route",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Place"
+            }
+          }
+        },
+        "required": ["id", "name", "stops", "features", "description", "places"]
+      },
+      "Review": {
+        "type": "object",
+        "properties": {
+          "routeId": {
+            "type": "string",
+            "example": "historic-center",
+            "description": "Route ID being reviewed"
+          },
+          "mark": {
+            "type": "number",
+            "example": 5,
+            "description": "Mark (1-5)"
+          },
+          "review": {
+            "type": "string",
+            "example": "Great route!",
+            "maxLength": 500,
+            "description": "User review, max 500 symbols"
+          }
+        },
+        "required": ["routeId", "mark", "review"]
+      }
+    }
+  }
+}

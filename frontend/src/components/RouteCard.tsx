@@ -25,11 +25,16 @@ export interface Place {
   estimatedVisitTime: number; // in minutes
 }
 
+export interface Feature {
+  key: string;
+  name: string;
+}
+
 export interface Route {
   id: string;
   name: string;
   stops: number;
-  features: string[];
+  features: Feature[];
   color: string;
   places: Place[];
   description: string;
@@ -52,6 +57,12 @@ const RouteCard = ({
 }: RouteCardProps) => {
   const { t } = useTranslation();
 
+  console.log(
+    "RouteCard rendered for:",
+    route.features.map((feature) => `Lmao: ${feature.toString()}`)
+  );
+  console.log("RouteCard rendered for:", route.features);
+  
   // Calculate total duration including routing time and visit times
   const routingTime = getRoutingTimeFromCache(route.id);
   const totalDuration = calculateRouteDuration(route, routingTime);
@@ -112,7 +123,7 @@ const RouteCard = ({
       </div>
       <div className="flex flex-wrap gap-2">
         {route.features.map((feature) => (
-          <FeatureChip key={feature} feature={feature} />
+          <FeatureChip key={feature.key} feature={feature.name} />
         ))}
       </div>
     </div>

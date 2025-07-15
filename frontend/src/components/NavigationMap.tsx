@@ -67,7 +67,7 @@ const NavigationMap = ({
   const [userPositionHistory, setUserPositionHistory] = useState<[number, number][]>([]);
   
   // Distance thresholds (in meters)
-  const DEVIATION_THRESHOLD = 100; // 100 meters
+  const DEVIATION_THRESHOLD = 50; // 100 meters
 
   // Calculate distance between two coordinates in meters (Haversine formula)
   const calculateDistance = (coord1: [number, number], coord2: [number, number]): number => {

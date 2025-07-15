@@ -1,18 +1,18 @@
 import { useParams, useLocation } from "wouter";
 import { useTourContext } from "../contexts/TourContext";
 import { useState, useEffect, useRef } from "react";
-import { useTranslation } from "../hooks/useTranslation";
+import { fetchData, apiUrl } from "../utils/api";
 
 interface Story {
-  id: number;
-  image: string;
+  placeKey: string;
+  order: number;
   title: string;
-  description: string;
+  text: string;
+  image: string;
 }
 
 const StoryView = () => {
   const { addVisitedWaypoint } = useTourContext();
-  const { t } = useTranslation();
   const { routeId, stopId } = useParams<{ routeId: string; stopId: string }>();
   const [, setLocation] = useLocation();
   const [currentStory, setCurrentStory] = useState(0);
@@ -24,29 +24,27 @@ const StoryView = () => {
   // Duration for each story in seconds (can be customized per story or audio length)
   const STORY_DURATION = 8; // 8 seconds per story
 
-  const stories: Story[] = [
-    {
-      id: 1,
-      image:
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Church_Mittweida1.JPG/800px-Church_Mittweida1.JPG",
-      title: t("exteriorView"),
-      description: t("exteriorDescription"),
-    },
-    {
-      id: 2,
-      image:
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Mittweida-Pfarrkirche2-Altar.jpg/800px-Mittweida-Pfarrkirche2-Altar.jpg",
-      title: t("stainedGlass"),
-      description: t("stainedGlassDescription"),
-    },
-    {
-      id: 3,
-      image:
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Stadtkirche_Mittweida%2C_Orgel_%281%29.jpg/800px-Stadtkirche_Mittweida%2C_Orgel_%281%29.jpg",
-      title: t("stoneCarvings"),
-      description: t("stoneCarvingsDescription"),
-    },
-  ]; // Ensure currentStory is within valid bounds on mount
+  const [stories, setStories] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch stories from API for the current stop
+  useEffect(() => {
+    if (!stopId) return;
+    setLoading(true);
+    setError(null);
+    fetchData(`carousel/${stopId}`)
+      .then((data) => {
+        setStories(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [stopId]);
+
+  // Ensure currentStory is within valid bounds on mount or when stories change
   useEffect(() => {
     if (
       stories &&
@@ -149,6 +147,20 @@ const StoryView = () => {
 
   const story = stories[currentStory];
   // Safety check to prevent errors when story is undefined or stories array is empty
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-xl">Loading story...</div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-xl text-red-400">Error: {error}</div>
+      </div>
+    );
+  }
   if (
     !stories.length ||
     !story ||
@@ -157,7 +169,7 @@ const StoryView = () => {
   ) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-xl">Loading story...</div>
+        <div className="text-xl">No stories found for this stop.</div>
       </div>
     );
   }
@@ -186,7 +198,7 @@ const StoryView = () => {
           }
         >
           <img
-            src={story.image}
+            src={story.image.startsWith('/images/') ? `${apiUrl.replace(/\/$/, '')}${story.image}` : story.image}
             alt={story.title}
             className={`w-full h-full object-cover transition-all duration-300 ease-in-out ${
               isTransitioning ? "scale-105 opacity-80" : "scale-100 opacity-100"
@@ -248,7 +260,7 @@ const StoryView = () => {
         >
           <h2 className="text-2xl font-bold mb-2 text-white">{story.title}</h2>
           <p className="text-lg text-white/90 leading-relaxed">
-            {story.description}
+            {story.text}
           </p>
         </div>
       </div>

@@ -1,33 +1,50 @@
 import { Link, useParams } from "wouter";
 import {  RotateCcw, LogOut, Star } from "lucide-react";
 import { useTranslation } from "../hooks/useTranslation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-// Add mittweidaRoutes import
-import { mittweidaRoutes } from "../data/routes";
+import { fetchData, apiUrl } from "../utils/api";
 
 const Completion = () => {
   const { t } = useTranslation();
   const params = useParams<{ routeId: string }>();
   const routeId = params.routeId;
 
-  // Find route stats by routeId
+  // Find route stats by routeId using API
+  const [routeName, setRouteName] = useState<string>("Tour");
+  const [routeStops, setRouteStops] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!routeId) return;
+    setLoading(true);
+    setError(null);
+    fetchData(`routes/${routeId}`)
+      .then((data) => {
+        setRouteName(data.name || "Tour");
+        setRouteStops(data.stops || 0);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [routeId]);
+
+  // Calculate tour stats from localStorage
   let tourStats = {
-    name: "Tour",
-    stops: 0,
+    name: routeName,
+    stops: routeStops,
     duration: "-",
     date: new Date().toLocaleDateString(),
     startedAt: null as number | null,
   };
   const activeTourRaw = localStorage.getItem('activeTour');
-  console.log("Active Tour Raw:", activeTourRaw);
   if (activeTourRaw) {
     try {
       const activeTour = JSON.parse(activeTourRaw);
       if (activeTour && activeTour.tourId === routeId) {
-        // Match route name from mittweidaRoutes
-        const routeObj = mittweidaRoutes.find(r => r.id === routeId);
-        let routeName = routeObj ? routeObj.name : "Route name";
         // Calculate duration in minutes
         let durationMinutes = "-";
         if (activeTour.startedAt) {
@@ -37,7 +54,7 @@ const Completion = () => {
         }
         tourStats = {
           name: routeName,
-          stops: activeTour.stops,
+          stops: routeStops,
           duration: durationMinutes,
           date: new Date(activeTour.startedAt).toLocaleDateString(),
           startedAt: activeTour.startedAt,
@@ -56,18 +73,31 @@ const Completion = () => {
     setReviewStars(star);
   };
 
-  // const handleStarMouseEnter = (star: number) => {
-  //   setHoveredStar(star);
-  // };
-
   const handleStarMouseLeave = () => {
     setHoveredStar(null);
   };
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     setReviewSubmitted(true);
-    // Here you could send the review to a backend or analytics
-    // e.g. sendReview(routeId, reviewStars)
+    // Submit review to backend
+    if (routeId && reviewStars !== null && reviewText.length <= 500) {
+      try {
+        await fetch(`${apiUrl}review`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            routeId,
+            mark: reviewStars,
+            review: reviewText,
+          }),
+        });
+      } catch (err) {
+        // Optionally handle error
+        console.error("Failed to submit review:", err);
+      }
+    }
   };
 
   return (
@@ -75,6 +105,12 @@ const Completion = () => {
       {/* Main Content */}
       {/* Main Content */}
       <main className="flex-1 flex flex-col justify-center items-center px-6 py-12">
+        {loading && (
+          <div className="text-center text-lg text-sandstone">Loading route info...</div>
+        )}
+        {error && (
+          <div className="text-center text-lg text-terracotta">Error: {error}</div>
+        )}
         {/* Review Section */}
         {!reviewSubmitted && (
           <div className="w-full max-w-md mb-10 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">

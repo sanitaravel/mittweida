@@ -39,10 +39,6 @@ const Welcome = () => {
             <Link href="/routes">
               <button className="btn-primary">{t("selectTour")}</button>
             </Link>
-
-            <Link href="/create">
-              <button className="btn-secondary">{t("createCustomTour")}</button>
-            </Link>
           </div>
         </div>
       </main>
