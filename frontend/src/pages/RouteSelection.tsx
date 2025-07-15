@@ -118,6 +118,21 @@ const RouteSelection = () => {
     filters.maxStops ||
     filters.minStops ||
     filters.features.length > 0;
+
+  // Save tour start info to localStorage
+  const handleStartRoute = (routeId: string) => {
+    const route = mittweidaRoutes.find((r) => r.id === routeId);
+    if (route) {
+      const startInfo = {
+        tourId: routeId,
+        stops: route.stops,
+        startedAt: Date.now(),
+      };
+      localStorage.setItem("activeTour", JSON.stringify(startInfo));
+    }
+    setSelectedRoute(routeId);
+  };
+
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       {selectedRoute ? (
@@ -197,7 +212,10 @@ const RouteSelection = () => {
                       Back
                     </button>
                     <Link href={`/tour/${selectedRoute}`} className="flex-1">
-                      <button className="w-full px-4 py-3 bg-sage text-white rounded-lg hover:bg-sage/90 transition-colors">
+                      <button
+                        className="w-full px-4 py-3 bg-sage text-white rounded-lg hover:bg-sage/90 transition-colors"
+                        onClick={() => handleStartRoute(selectedRoute)}
+                      >
                         Continue
                       </button>
                     </Link>
