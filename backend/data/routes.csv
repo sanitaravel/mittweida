@@ -1,0 +1,4 @@
+id,name,stops,features,description,places
+historic-center,Historic City Center,4,"historical|architecture|walking","Explore the charming historic center of Mittweida with its beautiful architecture and cultural landmarks.","train-station|college|market-square|adventgemeinde"
+nature-parks,Parks & Nature,3,"nature|parks|fresh-air|walking","Discover the green spaces and natural beauty around Mittweida.","football-stadium|mittweida-park|college-grounds"
+education-tour,Educational Journey,3,"education|technology|modern|innovation","Explore Mittweida's reputation as a center for education and innovation.","university-media|college-main|market-square-edu"
