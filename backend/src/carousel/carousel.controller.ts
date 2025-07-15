@@ -1,15 +1,24 @@
 import {
   Controller,
+  Get,
   Post,
   UploadedFile,
   UseInterceptors,
   Body,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { CarouselService } from './carousel.service';
 import { CarouselSlide } from './carousel.model';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags, ApiExtraModels } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiResponse,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+  ApiExtraModels,
+} from '@nestjs/swagger';
 import * as path from 'path';
 
 @ApiTags('carousel')
@@ -17,6 +26,13 @@ import * as path from 'path';
 @Controller('carousel')
 export class CarouselController {
   constructor(private readonly carouselService: CarouselService) {}
+
+  @Get(':placeKey')
+  @ApiOperation({ summary: 'Get all carousel slides for a specific placeKey' })
+  @ApiResponse({ status: 200, type: CarouselSlide, isArray: true })
+  getSlidesByPlaceKey(@Param('placeKey') placeKey: string): CarouselSlide[] {
+    return this.carouselService.getSlidesByPlaceKey(placeKey);
+  }
 
   @Post('upload')
   @ApiOperation({ summary: 'Add a new carousel slide with image upload' })
@@ -51,7 +67,8 @@ export class CarouselController {
     @Body('text') text: string,
   ) {
     const imagePath = `/data/images/${file.filename}`;
-    const slide: CarouselSlide = { placeKey, title, text, image: imagePath };
+    // order will be assigned in service
+    const slide: CarouselSlide = { placeKey, title, text, image: imagePath } as CarouselSlide;
     return this.carouselService.addSlide(slide);
   }
 }

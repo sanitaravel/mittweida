@@ -7,7 +7,7 @@ import { PlaceType } from './place-type.model';
 export class PlaceTypeService {
   private placeTypesFile: string = path.resolve(
     __dirname,
-    '../../data/place-types.csv',
+    '../../../data/place-types.csv',
   );
 
   static withFile(filePath: string): PlaceTypeService {

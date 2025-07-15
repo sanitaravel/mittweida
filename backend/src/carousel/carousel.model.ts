@@ -8,6 +8,12 @@ export class CarouselSlide {
   placeKey: string;
 
   @ApiProperty({
+    example: 1,
+    description: 'Order number of the slide for the place',
+  })
+  order: number;
+
+  @ApiProperty({
     example: 'Welcome to College Grounds',
     description: 'Title of the carousel slide',
   })
