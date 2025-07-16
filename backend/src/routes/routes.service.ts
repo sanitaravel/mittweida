@@ -59,7 +59,47 @@ export class RoutesService {
     return this.readRoutes();
   }
 
+
   getById(id: string): Route | undefined {
     return this.readRoutes().find(r => r.id === id);
+  }
+
+  create(route: Route): Route {
+    const routes = this.readRoutes();
+    if (routes.find(r => r.id === route.id)) {
+      throw new Error('Route with this ID already exists');
+    }
+    routes.push(route);
+    this.writeRoutes(routes);
+    return route;
+  }
+
+  update(id: string, update: Partial<Route>): Route {
+    const routes = this.readRoutes();
+    const idx = routes.findIndex(r => r.id === id);
+    if (idx === -1) throw new Error('Route not found');
+    routes[idx] = { ...routes[idx], ...update, id: routes[idx].id };
+    this.writeRoutes(routes);
+    return routes[idx];
+  }
+
+  delete(id: string): boolean {
+    const routes = this.readRoutes();
+    const idx = routes.findIndex(r => r.id === id);
+    if (idx === -1) return false;
+    routes.splice(idx, 1);
+    this.writeRoutes(routes);
+    return true;
+  }
+
+  private writeRoutes(routes: Route[]): void {
+    // Write header
+    const header = 'id,name,stops,features,description,places\n';
+    const lines = routes.map(r => {
+      const features = r.features.map(f => f.key).join('|');
+      const places = r.places.map(p => p.id).join('|');
+      return [r.id, r.name, r.stops, features, r.description, places].map(x => `${x}`).join(',');
+    });
+    fs.writeFileSync(this.routesFile, header + lines.join('\n'), 'utf-8');
   }
 }
