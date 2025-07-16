@@ -437,137 +437,56 @@ const NavigationMap = ({
 
     // Handle user location marker updates
     if (userLocation) {
-      // Update position history
       setUserPositionHistory(prevHistory => {
         const newHistory = [...prevHistory];
-        
-        // Only add if this is a new position (avoid duplicates)
         const lastPosition = newHistory[newHistory.length - 1];
-        if (!lastPosition || 
-            calculateDistance(userLocation, lastPosition) > 5) { // 5 meter threshold
+        if (!lastPosition || calculateDistance(userLocation, lastPosition) > 5) {
           newHistory.push(userLocation);
-          
-          // Keep only last 1000 positions to avoid memory issues
-          if (newHistory.length > 1000) {
-            newHistory.shift();
-          }
+          if (newHistory.length > 1000) newHistory.shift();
         }
-        
-        // Update user trail if we have at least 2 positions
-        if (newHistory.length >= 2) {
-          updateUserTrail(newHistory);
-        }
-        
+        if (newHistory.length >= 2) updateUserTrail(newHistory);
         return newHistory;
       });
-      
       updateUserLocationMarker();
     } else if (userLocationMarkerRef.current) {
-      // Remove user location marker if user location is no longer available
       mapInstanceRef.current?.removeLayer(userLocationMarkerRef.current);
       userLocationMarkerRef.current = null;
     }
 
-    // Handle route updates
-    let waypoints: [number, number][] = [];
-    let needsRouteUpdate = false;
-    
+    // Always show the actual route polyline using OSRM, even without geolocation
+    let waypoints: [number, number][] = route.places.map((place: Place) => place.coordinates);
     if (userLocation) {
-      // Use routeWaypoints for route calculation if provided, else fallback to skipped logic
-      const waypointsList: Place[] = routeWaypoints ?? route.places.filter((place: Place) => !skippedWaypoints.has(place.id));
-      waypoints = [userLocation, ...waypointsList.map((place: Place) => place.coordinates)];
-      needsRouteUpdate = shouldUpdateRoute(userLocation);
-      
-      if (needsRouteUpdate && !isLoadingRoute) {
-        console.log("[NavigationMap] User has deviated from route, recalculating...");
-        setShowDeviationWarning(true);
-      } else if (!needsRouteUpdate) {
-        console.log("[NavigationMap] User is on route, keeping existing path");
-        setShowDeviationWarning(false);
-      }
-    } else {
-      // Don't calculate route without user location - wait for user location to be available
-      console.log("[NavigationMap] No user location available, waiting for location...");
-      needsRouteUpdate = false;
+      // If geolocation is available, prepend user location
+      waypoints = [userLocation, ...waypoints];
     }
 
-    // Only fetch new route if needed and not already loading
-    if (needsRouteUpdate && !isLoadingRoute) {
-      // Clear existing route lines but keep markers
-      clearRouteLines();
-      
-      // Fetch and draw actual routing data
+    // Only fetch and draw route if not already drawn
+    if (routeLayersRef.current.length === 0 && waypoints.length > 1) {
       const drawRoute = async () => {
         const routingData = await fetchRouteData(waypoints);
-        
         if (routingData && routingData.coordinates.length > 0) {
-          // Add new route lines
           const routePolyline = addRouteLines(routingData.coordinates);
-
-          // Update state with route data
-          setRouteData(routingData);
-          if (userLocation) {
-            setLastRouteUpdateLocation(userLocation);
-          }
-          setShowDeviationWarning(false); // Hide warning after successful update
-          setIsInitialized(true);
-
           // Fit map to show route with proper padding (only on initial load)
           if (!hasUserInteracted && routePolyline) {
-            if (userLocation) {
-              // Include user location in bounds calculation
-              const allCoordinates = [...routingData.coordinates, userLocation];
-              const bounds = L.latLngBounds(allCoordinates);
-              map.fitBounds(bounds, { padding: [30, 30] });
-            } else {
-              map.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
-            }
+            const bounds = L.latLngBounds(routingData.coordinates);
+            map.fitBounds(bounds, { padding: [30, 30] });
           }
-
-          console.log("[NavigationMap] Drew actual route path with", routingData.coordinates.length, "coordinates");
         } else {
-          // Fallback to straight lines if routing fails
-          console.log("[NavigationMap] Routing failed, falling back to straight lines");
-          
+          // Fallback to straight line if routing fails
           const fallbackPolyline = L.polyline(waypoints, {
             color: getColorValue("blue"),
             weight: 4,
             opacity: 0.8,
-            dashArray: "10, 10", // Dashed to indicate this is not actual routing
+            dashArray: "10, 10",
           }).addTo(map);
-
           routeLayersRef.current = [fallbackPolyline];
-          setIsInitialized(true);
-
-          // Fit map to show route with proper padding (only on initial load)
           if (!hasUserInteracted) {
-            if (userLocation) {
-              const allCoordinates = [...waypoints, userLocation];
-              const bounds = L.latLngBounds(allCoordinates);
-              map.fitBounds(bounds, { padding: [30, 30] });
-            } else {
-              map.fitBounds(fallbackPolyline.getBounds(), { padding: [30, 30] });
-            }
+            const bounds = L.latLngBounds(waypoints);
+            map.fitBounds(bounds, { padding: [30, 30] });
           }
         }
       };
-
-      // Draw the route
       drawRoute();
-    } else if (routeData && routeLayersRef.current.length === 0 && !isLoadingRoute) {
-      // Use existing route data without recalculating, but only if route lines don't exist and not loading
-      const routePolyline = addRouteLines(routeData.coordinates);
-
-      // Fit map to show route with proper padding (only on initial load)
-      if (!hasUserInteracted && routePolyline) {
-        if (userLocation) {
-          const allCoordinates = [...routeData.coordinates, userLocation];
-          const bounds = L.latLngBounds(allCoordinates);
-          map.fitBounds(bounds, { padding: [30, 30] });
-        } else {
-          map.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
-        }
-      }
     }
   }, [route, userLocation, hasUserInteracted, skippedWaypoints]);
 

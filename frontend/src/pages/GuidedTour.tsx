@@ -465,19 +465,21 @@ const GuidedTour = () => {
 
       {/* Completion Card */}
       {allWaypointsPassed && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[1003] bg-beige border-4 border-sage rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 flex flex-col items-center">
-          <h3 className="text-3xl font-bold text-sage mb-3">
-            Congratulations!
-          </h3>
-          <p className="text-charcoal mb-6 text-center text-lg font-medium">
-            You've completed all waypoints on this route.
-          </p>
-          <button
-            className="bg-sage text-white rounded-xl px-8 py-4 font-semibold text-xl shadow-lg hover:bg-terracotta transition-all duration-150"
-            onClick={() => setLocation(`/completion/${routeId}`)}
-          >
-            Finish Route
-          </button>
+        <div className="absolute inset-0 z-[1003] flex items-center justify-center">
+          <div className="bg-beige border-4 border-sage rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 flex flex-col items-center">
+            <h3 className="text-3xl font-bold text-sage mb-3">
+              Congratulations!
+            </h3>
+            <p className="text-charcoal mb-6 text-center text-lg font-medium">
+              You've completed all waypoints on this route.
+            </p>
+            <button
+              className="bg-sage text-white rounded-xl px-8 py-4 font-semibold text-xl shadow-lg hover:bg-terracotta transition-all duration-150"
+              onClick={() => setLocation(`/completion/${routeId}`)}
+            >
+              Finish Route
+            </button>
+          </div>
         </div>
       )}
     </div>
