@@ -14,14 +14,7 @@ export interface Place {
   name: string;
   description: string;
   coordinates: [number, number]; // [latitude, longitude]
-  type:
-    | "attraction"
-    | "restaurant"
-    | "shop"
-    | "landmark"
-    | "park"
-    | "museum"
-    | "viewpoint";
+  type: string;
   estimatedVisitTime: number; // in minutes
 }
 

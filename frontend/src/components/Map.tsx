@@ -49,31 +49,6 @@ const Map: React.FC<MapProps> = ({
   const [showAttribution, setShowAttribution] = useState(false);
   const mapRef = useRef<L.Map | null>(null);
 
-  // Fit map bounds to show all routes when routes change
-  useEffect(() => {
-    if (mapRef.current && routes.length > 0 && showRoutePaths) {
-      const allCoordinates: [number, number][] = [];
-
-      // Collect all coordinates from all routes
-      routes.forEach((route) => {
-        route.places.forEach((place) => {
-          allCoordinates.push(place.coordinates);
-        });
-      });
-
-      if (allCoordinates.length > 0) {
-        // Create bounds from all coordinates
-        const bounds = L.latLngBounds(allCoordinates);
-
-        // Add some padding and fit the bounds
-        mapRef.current.fitBounds(bounds, {
-          padding: [20, 20],
-          maxZoom: 16, // Don't zoom in too much for single points
-        });
-      }
-    }
-  }, [routes, showRoutePaths]);
-
   const handleZoomIn = () => {
     if (mapRef.current) {
       mapRef.current.zoomIn();
@@ -170,10 +145,6 @@ const Map: React.FC<MapProps> = ({
               />
             );
           })}
-        {/* City Center Marker */}
-        <Marker position={MITWEIDA_CENTER}>
-          <Popup>Mitweida City Center</Popup>{" "}
-        </Marker>
         {/* Route Start Point Markers */}
         {(markerRoutes || routes).map((route) => {
           // Use first place as start point for marker
