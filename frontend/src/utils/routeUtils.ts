@@ -73,8 +73,10 @@ export const filterRoutes = (
 
     // Features filter
     if (filters.features.length > 0) {
-      const hasAllFeatures = filters.features.every((feature) =>
-        route.features.includes(feature)
+      // route.features is Feature[], filters.features is string[] (feature keys)
+      const routeFeatureKeys = route.features.map(f => typeof f === "string" ? f : f.key);
+      const hasAllFeatures = filters.features.every((featureKey) =>
+        routeFeatureKeys.includes(featureKey)
       );
       if (!hasAllFeatures) {
         return false;
@@ -86,8 +88,11 @@ export const filterRoutes = (
 };
 
 export const getAllUniqueFeatures = (routes: Route[]): string[] => {
-  const allFeatures = routes.flatMap((route) => route.features);
-  return [...new Set(allFeatures)];
+  // route.features is Feature[] or string[]
+  const allFeatureKeys = routes.flatMap((route) =>
+    route.features.map(f => typeof f === "string" ? f : f.key)
+  );
+  return [...new Set(allFeatureKeys)];
 };
 
 // Route cache management utilities

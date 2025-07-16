@@ -10,7 +10,7 @@ import {
   clearRouteCache,
   preloadRouteCache,
 } from "../utils/routeUtils";
-import { mittweidaRoutes } from "../data/routes";
+import { fetchData } from "../utils/api";
 
 const Settings = () => {
   const {
@@ -79,7 +79,10 @@ const Settings = () => {
   const handleCachePreload = async () => {
     setIsPreloading(true);
     try {
-      await preloadRouteCache(mittweidaRoutes);
+      // Fetch all routes from API and extract their IDs
+      const routes = await fetchData("/routes");
+      const routeIds = Array.isArray(routes) ? routes.map((r) => r.id) : [];
+      await preloadRouteCache(routeIds);
       updateCacheStats();
       showNotification(t("cachePreloaded"));
     } catch (error) {

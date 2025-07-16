@@ -11,7 +11,7 @@ import Completion from "./pages/Completion";
 function App() {
   return (
     <SettingsProvider>
-      <Router>
+      <Router base="/mittweida">
         <div className="min-h-screen bg-cream">
           <Route path="/" component={Welcome} />
           <Route path="/routes" component={RouteSelection} />

@@ -5,7 +5,7 @@ import { vi } from "vitest";
 
 // Mock react-leaflet and leaflet for shallow rendering
 vi.mock("react-leaflet", () => ({
-  MapContainer: ({ children, ...props }: any) => {
+  MapContainer: ({ children }: any) => {
     // Find the MapController child and call its onMapInstanceReady with a mock map
     let mapInstance = {
       fitBounds: () => {},

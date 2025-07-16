@@ -36,7 +36,6 @@ interface NavigationMapProps {
   userLocation?: [number, number] | null;
   className?: string;
   skippedWaypoints?: Set<string>;
-  routeWaypoints?: Place[];
 }
 
 const NavigationMap = ({
@@ -44,7 +43,6 @@ const NavigationMap = ({
   userLocation,
   className = "",
   skippedWaypoints = new Set(),
-  routeWaypoints,
 }: NavigationMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -52,7 +50,7 @@ const NavigationMap = ({
   const markersRef = useRef<L.Marker[]>([]);
   const userLocationMarkerRef = useRef<L.Marker | null>(null);
   const userTrailRef = useRef<L.Polyline | null>(null);
-  const previousSkippedSizeRef = useRef(0);
+  // const previousSkippedSizeRef = useRef(0);
   const [showAttribution, setShowAttribution] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [routeData, setRouteData] = useState<{
@@ -61,10 +59,8 @@ const NavigationMap = ({
     duration: number;
   } | null>(null);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
-  const [showDeviationWarning, setShowDeviationWarning] = useState(false);
   const [lastRouteUpdateLocation, setLastRouteUpdateLocation] = useState<[number, number] | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [userPositionHistory, setUserPositionHistory] = useState<[number, number][]>([]);
+  const userPositionHistoryRef = useRef<[number, number][]>([]);
   
   // Distance thresholds (in meters)
   const DEVIATION_THRESHOLD = 50; // 100 meters
@@ -142,9 +138,9 @@ const NavigationMap = ({
     }
   };
 
-  // Update user trail polyline
-  const updateUserTrail = (newPositions: [number, number][]) => {
-    if (!mapInstanceRef.current || newPositions.length < 2) return;
+  const updateUserTrail = () => {
+    const history = userPositionHistoryRef.current;
+    if (!mapInstanceRef.current || history.length < 2) return;
 
     const map = mapInstanceRef.current;
 
@@ -155,7 +151,7 @@ const NavigationMap = ({
     }
 
     // Create new trail polyline
-    const userTrail = L.polyline(newPositions, {
+    const userTrail = L.polyline(history, {
       color: '#ef4444', // Red color
       weight: 3,
       opacity: 0.8,
@@ -410,23 +406,19 @@ const NavigationMap = ({
   }, [route]);
 
   // Clear route data when waypoints are skipped to force regeneration
-  useEffect(() => {
-    const currentSkippedSize = skippedWaypoints.size;
-    const previousSkippedSize = previousSkippedSizeRef.current;
-    
-    if (currentSkippedSize > previousSkippedSize) {
-      console.log("[NavigationMap] New waypoints skipped, clearing route for regeneration");
-      setRouteData(null);
-      setLastRouteUpdateLocation(null);
-      clearRouteLines(); // Immediately clear the visual route
-    }
-    
-    previousSkippedSizeRef.current = currentSkippedSize;
-  }, [skippedWaypoints]);
+useEffect(() => {
+  // Always clear route data and lines when skippedWaypoints changes
+  setRouteData(null);
+  setLastRouteUpdateLocation(null);
+  clearRouteLines();
+}, [skippedWaypoints]);
 
   // Update route and markers
   useEffect(() => {
     if (!mapInstanceRef.current || !route.places.length) return;
+
+    // Always clear previous route lines before any route calculation
+    clearRouteLines();
 
     const map = mapInstanceRef.current;
 
@@ -435,18 +427,15 @@ const NavigationMap = ({
       addMarkers();
     }
 
-    // Handle user location marker updates
+    // Handle user location marker updates and route recalculation
     if (userLocation) {
-      setUserPositionHistory(prevHistory => {
-        const newHistory = [...prevHistory];
-        const lastPosition = newHistory[newHistory.length - 1];
-        if (!lastPosition || calculateDistance(userLocation, lastPosition) > 5) {
-          newHistory.push(userLocation);
-          if (newHistory.length > 1000) newHistory.shift();
-        }
-        if (newHistory.length >= 2) updateUserTrail(newHistory);
-        return newHistory;
-      });
+      const history = userPositionHistoryRef.current;
+      const lastPosition = history[history.length - 1];
+      if (!lastPosition || calculateDistance(userLocation, lastPosition) > 5) {
+        history.push(userLocation);
+        if (history.length > 1000) history.shift();
+      }
+      if (history.length >= 2) updateUserTrail();
       updateUserLocationMarker();
     } else if (userLocationMarkerRef.current) {
       mapInstanceRef.current?.removeLayer(userLocationMarkerRef.current);
@@ -454,24 +443,40 @@ const NavigationMap = ({
     }
 
     // Always show the actual route polyline using OSRM, even without geolocation
-    let waypoints: [number, number][] = route.places.map((place: Place) => place.coordinates);
+
+    // Filter out skipped waypoints
+    let filteredPlaces = route.places.filter(
+      (place) => !skippedWaypoints.has(place.id)
+    );
+    let waypoints: [number, number][] = filteredPlaces.map((place: Place) => place.coordinates);
     if (userLocation) {
       // If geolocation is available, prepend user location
       waypoints = [userLocation, ...waypoints];
     }
+    // Debug: print which waypoints are being used for the route
+    console.log('[NavigationMap] Building route with waypoints:', waypoints, 'skippedWaypoints:', Array.from(skippedWaypoints));
 
-    // Only fetch and draw route if not already drawn
-    if (routeLayersRef.current.length === 0 && waypoints.length > 1) {
+    // Only fetch and draw route if not already drawn, or if user deviated/moved significantly
+    const shouldRedraw =
+      (userLocation && shouldUpdateRoute(userLocation)) ||
+      (routeLayersRef.current.length === 0 && waypoints.length > 1);
+
+    if (shouldRedraw && waypoints.length > 1) {
       const drawRoute = async () => {
+        // Always clear previous route lines before drawing any route (including initial)
+        clearRouteLines();
         const routingData = await fetchRouteData(waypoints);
         if (routingData && routingData.coordinates.length > 0) {
+          clearRouteLines(); // Ensure no previous polylines remain
           const routePolyline = addRouteLines(routingData.coordinates);
           // Fit map to show route with proper padding (only on initial load)
           if (!hasUserInteracted && routePolyline) {
             const bounds = L.latLngBounds(routingData.coordinates);
+            if (!mapInstanceRef.current) return;
             map.fitBounds(bounds, { padding: [30, 30] });
           }
         } else {
+          clearRouteLines(); // Ensure no previous polylines remain
           // Fallback to straight line if routing fails
           const fallbackPolyline = L.polyline(waypoints, {
             color: getColorValue("blue"),
@@ -482,6 +487,7 @@ const NavigationMap = ({
           routeLayersRef.current = [fallbackPolyline];
           if (!hasUserInteracted) {
             const bounds = L.latLngBounds(waypoints);
+            if (!mapInstanceRef.current) return;
             map.fitBounds(bounds, { padding: [30, 30] });
           }
         }
@@ -494,15 +500,7 @@ const NavigationMap = ({
 
   return (
     <div className={`h-full w-full relative ${className}`}>
-      {/* Route Deviation Warning */}
-      {showDeviationWarning && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-orange-100 border border-orange-400 px-4 py-2 rounded-lg shadow-lg">
-          <div className="flex items-center gap-2 text-sm text-orange-800">
-            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-            <span className="font-medium">You've deviated from the route - recalculating...</span>
-          </div>
-        </div>
-      )}
+      {/* Route Deviation Warning removed */}
       
       <style>
         {`

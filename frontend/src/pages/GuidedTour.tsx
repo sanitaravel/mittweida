@@ -195,10 +195,15 @@ const GuidedTour = () => {
         const newSkipped = new Set(prev);
         waypointsToSkip.forEach((waypoint) => {
           newSkipped.add(waypoint.id);
-          addVisitedWaypoint(waypoint.id);
         });
         return newSkipped;
       });
+      // Add visited waypoints in a separate effect to avoid setState in render
+      setTimeout(() => {
+        waypointsToSkip.forEach((waypoint) => {
+          addVisitedWaypoint(waypoint.id);
+        });
+      }, 0);
     }
 
     // If geolocation is not available, automatically show next waypoint
@@ -330,9 +335,9 @@ const GuidedTour = () => {
   }
 
   // Prepare filtered waypoints for route calculation (exclude visited)
-  const routeWaypoints = route
-    ? route.places.filter((place) => !visitedWaypoints.includes(place.id))
-    : [];
+  // const routeWaypoints = route
+  //   ? route.places.filter((place) => !visitedWaypoints.includes(place.id))
+  //   : [];
 
   // Check if all waypoints are visited or skipped
   const allWaypointsPassed =
@@ -350,7 +355,6 @@ const GuidedTour = () => {
           userLocation={userLocation}
           className="h-full"
           skippedWaypoints={skippedWaypoints}
-          routeWaypoints={routeWaypoints}
         />
       )}
 
