@@ -268,6 +268,34 @@
         },
         "summary": "Get all routes",
         "tags": ["routes"]
+      },
+      "post": {
+        "operationId": "RoutesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Route"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Route"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new route",
+        "tags": ["routes"]
       }
     },
     "/routes/{id}": {
@@ -296,6 +324,60 @@
           }
         },
         "summary": "Get route by ID",
+        "tags": ["routes"]
+      },
+      "put": {
+        "operationId": "RoutesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Route"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a route",
+        "tags": ["routes"]
+      },
+      "delete": {
+        "operationId": "RoutesController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Delete a route",
         "tags": ["routes"]
       }
     },
